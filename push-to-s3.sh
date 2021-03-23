@@ -7,18 +7,17 @@
 # Simon Green                                                                 #
 #                                                                             #
 ###############################################################################
-S3BucketName="rancher-contrail"
+S3BucketName="wraith23874984"
 AWSAZ="eu-central-1"
 PathForTheDeployers="./deployers/"
 
 echo "*******************************************************************************"
 echo "This script is for the admins, you do not need to run it."
-echo "It creates a public s3 bucket if needed then pushed up the latest version on the deployers to it"
-echo "Its used by the one click launch buttons on the wiki page."
-echo "You can also take the button code and embed it in your own sites"
+echo "It creates a public s3 bucket if needed then pushes up the latest version on the deployers to it"
+echo "The deployers can then be launched as one click launch buttons on the wiki pages and emails and within test scripts."
 echo "*******************************************************************************"
 echo "ok lets get started..."
-echo -n "Are you an admin on the SRE aws account and want to push up the latest deployer to S3?"
+echo -n "Are you an admin on the connected aws account and want to push up the latest deployer to S3?"
 read -p "$* [y/n] " areyoureallytheadmin 
 if [ $areyoureallytheadmin == "y" ] ||  [ $areyoureallytheadmin == "Y" ] ;
 then
