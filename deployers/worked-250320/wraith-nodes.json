@@ -5,41 +5,27 @@
         "AvailabilityZone1": {
             "Description": "AWS Availability Zone For the nodes",
             "Type": "String",
-            "Default": "eu-west-1a"
+            "Default": "eu-west-3a"
         },
         "BastionInstanceType": {
             "Description": "Contrail Bastion Instance Type",
             "Type": "String",
-            "Default": "m4.2xlarge"
+            "Default": "m5.large"
         },
         "WraithBuildInstanceType": {
             "Description": "wraith build Instance Type",
             "Type": "String",
-            "Default": "m5.2xlarge"
+            "Default": "m5.large"
         },
         "WraithNodeInstanceType": {
             "Description": "wraith node Instance Type",
             "Type": "String",
-            "Default": "m5.2xlarge"
+            "Default": "m5.large"
         },
         "KeyName": {
             "Description": "SSH Key Name",
             "Type": "AWS::EC2::KeyPair::KeyName",
             "Default": "ContrailKey"
-        },
-        "ContainerRegistryTag": {
-            "Description": "Container Registry Tag",
-            "Type": "String",
-            "Default": "2011.138"
-        },
-        "ContainerRegistryUserName": {
-            "Description": "Container Registry User Name",
-            "Type": "String"
-        },
-        "ContainerRegistryPassword": {
-            "Description": "Container Registry User Password",
-            "Type": "String",
-            "NoEcho": true
         },
         "ContrailBastionPrivateSNGatewayIP": {
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})",
@@ -51,7 +37,7 @@
         "DeployContrailBastion": {
             "Description": "if true we will deploy contrail bastion",
             "Type": "String",
-            "Default": "true"
+            "Default": "false"
         },
         "ContrailBastionAZ1PublicIP": {
             "Description": "Contrail Bastion public static IP",
@@ -77,36 +63,10 @@
             "Default": "0.0.0.0/0",
             "ConstraintDescription": "Put your Client IP here x.x.x.x/32, if you leave it blank then 0.0.0.0/0 will be populated and the internet will be able access your deployments UI and SSH"
         },
-        "SGSubnet1": {
-            "Description": "AN IP address range allowed in security to point towards the cluster.",
-            "Type": "String",
-            "Default": "100.73.100.0/23"
-        },
-        "SGSubnet2": {
-            "Description": "AN IP address range allowed in security to point towards the controller cluster. Leave it blank if you do not want it populated",
-            "Type": "String",
-            "Default": "100.73.101.0/23"
-        },
-        "SGSubnet3": {
-            "Description": "AN IP address range allowed in security to point towards the controller cluster. Leave it blank if you do not want it populated",
-            "Type": "String",
-            "Default": "100.73.102.0/23"
-        },
-        "SGSubnet4": {
-            "Description": "AN IP address range allowed in security to point towards the controller cluster. Leave it blank if you do not want it populated",
-            "Type": "String",
-            "Default": "100.73.103.0/23"
-        },
         "SiteName": {
             "Description": "Site Name",
             "Type": "String",
             "Default": "wraith"
-        },
-        "SSHPassword": {
-            "Description": "SSH Password",
-            "Type": "String",
-            "Default": "EfrtGF5EDF_d54ERrf",
-            "NoEcho": true
         },
         "ContrailPassword": {
             "Description": "Contrail Bastion Password",
@@ -126,60 +86,11 @@
             "Description": "Existing Private Subnet 1 id for the nodes",
             "Type": "String"
         },
-        "k8sPodBaseIP": {
-            "Description": "Used as the base addess for the POD IPAM, the host ip last digit is transposed into the third digit to ensure the subnet is unique per instance",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "Default": "10.32.0.0/24"
-        },
-        "k8sServiceBaseIP": {
-            "Description": "Used as the base addess for the POD IPAM, the host ip last digit is transposed into the third digit to ensure the subnet is unique per instance",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "Default": "10.96.0.0/24"
-        },
-        "k8sFabricBaseIP": {
-            "Description": "Used as the base addess for the Fabric IPAM, the host ip last digit is transposed into the third digit to ensure the subnet is unique per instance",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "Default": "10.97.0.0/24"
-        },
-        "k8sFabricSN": {
-            "Description": "The subnet vrouters are allowed to accept tunnels on. this is proabably your VPC subnet. It ends up in config->global parameter->Fabric Subnets",
-            "Type": "String",
-            "MinLength": "9",
-            "MaxLength": "18",
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "Default": "100.72.100.0/22"
-        },
-        "k8sBaseASN": {
-            "Description": "The controller ASN base, 4-bytes, the host ip last digit is added to this in order to create a unique ASN per instances",
-            "Type": "String",
-            "MinLength": "1",
-            "MaxLength": "10",
-            "Default": "63000"
-        },
-        "k8sVersion": {
-            "Description": "Kubernetes version to install, default is 1.18.9",
+        "NMAPVersion": {
+            "Description": "NMAP version to install, default is 1.18.9",
             "Type": "String",
             "Default": "1.18.9"
         },
-        "InstallerBGitHubInstallerLocation": {
-            "Description": "The location  to use if Github is selected",
-            "Type": "String",
-            "Default": "https://github.com/Juniper/k8s-federated-deployer.git -b release-3.11-contrail"
-        },
-        "InstallerCS3Location": {
-            "Description": "The location  to use if Github is selected",
-            "Type": "String",
-            "Default": "https://s3-eu-central-1.amazonaws.com/wraith-contrail/contrail-k8s-wraith.yaml"
-         },
         "NodeMTU": {
             "Description": "MTU for the Nodes. Usefull for VPN gateways, which might need a sub 1500 MTU",
             "Type": "String",
@@ -195,68 +106,6 @@
             "Type": "String",
             "Default": "false"
         },
-        "TestPod": {
-            "Description": "if true we deploy a test pod into each node for you",
-            "Type": "String",
-            "Default": "true"
-        },
-        "FullMesh": {
-            "Description": "if true controllers are bgp meshed ",
-            "Type": "String",
-            "Default": "true"
-        },
-        "MX1Name": {
-            "Description": "MX1 bgp peer name",
-            "Type": "String",
-            "Default": "mx1"
-        },
-        "MX2Name": {
-            "Description": "MX2 bgp peer name",
-            "Type": "String",
-            "Default": "mx2"
-        },
-        "MX1ASN": {
-            "Description": "MX1 bgp peer ASN",
-            "Type": "String",
-            "Default": "64533"
-        },
-        "MX2ASN": {
-            "Description": "MX2 bgp peer ASN",
-            "Type": "String",
-            "Default": "64534"
-        },
-        "MX1Password": {
-            "Description": "MX1 password for netconf",
-            "Type": "String",
-            "NoEcho": "True",
-            "Default": "contrail123"
-        },
-        "MX2Password": {
-            "Description": "MX2 password for netconf",
-            "Type": "String",
-            "NoEcho": "True",
-            "Default": "contrail123"
-        },
-        "MX1User": {
-            "Description": "MX1 username for netconf",
-            "Type": "String",
-            "Default": "root"
-        },
-        "MX2User": {
-            "Description": "MX2 username for netconf",
-            "Type": "String",
-            "Default": "root"
-        },
-        "MX1IPAddress": {
-            "Description": "MX1 IP Address",
-            "Type": "String",
-            "Default": "10.20.30.10"
-        },
-        "MX2IPAddress": {
-            "Description": "MX2 IP Address",
-            "Type": "String",
-            "Default": "10.20.30.11"
-        },
         "ExternaldnsEnabled": {
             "Description": "true if you want to deploy external DNS into AWS with a test app",
             "Type": "String",
@@ -265,7 +114,7 @@
         "ExternaldnsCreateZone": {
             "Description": "true if you want the stack to create the zone",
             "Type": "String",
-            "Default": "true"
+            "Default": "false"
         },
         "ExternaldnsDomainFilter": {
             "Description": "domain for the external dns to monitor",
@@ -306,11 +155,7 @@
     },
     "Conditions": {
         "HasDeployContrailBastion": { "Fn::Equals": [{ "Ref": "DeployContrailBastion" }, "true"] },
-        "HasExternaldnsCreateZone": { "Fn::Equals": [{ "Ref": "ExternaldnsCreateZone" }, "true"] },
-        "HasSGSubnet1": { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SGSubnet1" }, ""] }] },
-        "HasSGSubnet2": { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SGSubnet2" }, ""] }] },
-        "HasSGSubnet3": { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SGSubnet3" }, ""] }] },
-        "HasSGSubnet4": { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SGSubnet4" }, ""] }] }
+        "HasExternaldnsCreateZone": { "Fn::Equals": [{ "Ref": "ExternaldnsCreateZone" }, "true"] }
     },
     "Resources": {
         "R53ZONE": {
@@ -456,54 +301,6 @@
                         "Value": { "Fn::Join" : [ ".", [ "Contrail_wraith_Private_Security_Group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] }
                     }
                 ]
-            }
-        },
-        "SgEntry01wraith": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "HasSGSubnet1",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupWraith" },
-                "IpProtocol": "-1",
-                "FromPort": "-1",
-                "ToPort": "-1",
-                "CidrIp": { "Ref": "SGSubnet1" },
-                "Description": "allow inbound traffic to the controllers from a specified subnet subnet1"
-            }
-        },
-        "SgEntry02wraith": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "HasSGSubnet2",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupWraith" },
-                "IpProtocol": "-1",
-                "FromPort": "-1",
-                "ToPort": "-1",
-                "CidrIp": { "Ref": "SGSubnet2" },
-                "Description": "allow inbound traffic to the controllers from a specified subnet subnet2"
-            }
-        },
-        "SgEntry03wraith": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "HasSGSubnet3",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupWraith" },
-                "IpProtocol": "-1",
-                "FromPort": "-1",
-                "ToPort": "-1",
-                "CidrIp": { "Ref": "SGSubnet3" },
-                "Description": "allow inbound traffic to the controllers from a specified subnet subnet3"
-            }
-        },
-        "SgEntry04wraith": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "HasSGSubnet4",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupWraith" },
-                "IpProtocol": "-1",
-                "FromPort": "-1",
-                "ToPort": "-1",
-                "CidrIp": { "Ref": "SGSubnet4" },
-                "Description": "allow inbound traffic to the controllers from a specified subnet subnet4"
             }
         },
         "SGIngressSecurityGroupWraith": {
@@ -733,144 +530,7 @@
                                "echo \"\nserver 0.pool.ntp.org iburst\" | tee --append /etc/ntp.conf\n",
                                "systemctl enable ntp\n",
                                "systemctl restart ntp\n",
-                               "#systemd-resolv is not playing nicely, it kills dns on vhost0, so for now we'll setup normal dns\n",
-                               "export DNSIP=$(systemd-resolve --status | grep \"DNS Servers\" | awk 'NF>1{print $NF}')\n",
-                               "cp /etc/resolv.conf /tmp\n",
-                               "systemctl disable systemd-resolved\n",
-                               "systemctl stop systemd-resolved\n",
-                               "rm /etc/resolv.conf\n",
-                               "cp /tmp/resolv.conf /etc\n",
-                               "sed -i \"s/nameserver 127.0.0.53/nameserver $DNSIP/\" /etc/resolv.conf\n",
-                               "netplan apply\n",
-                               "#################\n",
-                               "#install the wraith build node\n",
-                               "#################\n",
-                               "mkdir -p /etc/wraith/wraith2/\n",
-                               "cat > /etc/wraith/wraith2/config.yaml <<EOF\n",
-                               "token: my-shared-secret\n",
-                               "tls-san:\n",
-                               "  - https://my-fixed-registration-address.com\n",
-                               "  - another-kubernetes-domain.com \n",
-                               "disable:\n",
-                               "  - wraith2-canal\n",
-                               "EOF\n",
-                               "curl -sfL https://get.wraith.io | INSTALL_RANCHERD_VERSION=v2.5.4-rc6 sh -\n",
-                               "systemctl enable wraithd-server.service\n",
-                               "systemctl start wraithd-server.service\n",
-                               "cat > /root/wait-for-pods.sh <<EOF\n",
-                               "#!/bin/bash\n",
-                               "KUBECONFIG=/etc/wraith/wraith2/wraith2.yaml\n",
-                               "PATH=$PATH:/var/lib/wraith/wraith2/bin\n",
-                               "while [ ! -f /etc/wraith/wraith2/wraith2.yaml ]\n",
-                               "do\n",
-                               "  echo \"waiting for wraith2.yml\" && sleep 10;\n", 
-                               "done\n",
-                               "while [[ \\$(kubectl  get pods --no-headers=true -n kube-system | grep Running | wc -l) -le 4 ]];\n",
-                               "do\n",
-                               "     echo \"waiting for pods to show up\" && sleep 10;\n",
-                               "done\n",
-                               "EOF\n",
-                               "echo \"export KUBECONFIG=/etc/wraith/wraith2/wraith2.yaml\" >> /root/.bashrc\n",
-                               "echo \"export PATH=$PATH:/var/lib/wraith/wraith2/bin\" >> /root/.bashrc\n",
-                               "echo \"export KUBECONFIG=/etc/wraith/wraith2/wraith2.yaml\" >> /home/ubuntu/.bashrc\n",
-                               "echo \"export PATH=$PATH:/var/lib/wraith/wraith2/bin\" >> /home/ubuntu/.bashrc\n",
-                               "echo \"runtime-endpoint: unix:///run/k3s/containerd/containerd.sock\" > /etc/crictl.yaml\n",
-                               "export KUBECONFIG=/etc/wraith/wraith2/wraith2.yaml PATH=$PATH:/var/lib/wraith/wraith2/bin\n",
-                               "chmod a+x /root/wait-for-pods.sh\n",
-                               "/root/wait-for-pods.sh\n",
-                               "mkdir /root/.kube\n",
-                               "mkdir /home/ubuntu/.kube\n",
-                               "cp /etc/wraith/wraith2/wraith2.yaml /root/.kube/config\n",
-                               "cp /etc/wraith/wraith2/wraith2.yaml /home/ubuntu/.kube/config\n",
-                               "chown ubuntu:ubuntu /home/ubuntu/.kube\n",
-                               "chown ubuntu:ubuntu /home/ubuntu/.kube/config\n",
-                               "ln -s /var/lib/wraith/wraith2/bin/kubectl /usr/bin/kubectl\n",
-                               "#################\n",
-                               "#install Contrail SDN as the CNI\n",
-                               "#################\n",
-                               "cd /root\n",
-                               "wget https://s3-eu-central-1.amazonaws.com/wraith-contrail/contrail-wraith-wraith2.yaml -O /root/contrail-wraith.yaml \n",
-                               "sed -i -e \"s/\\[CONTR1\\]/$(hostname -I | awk '{print $1}')/g\" contrail-wraith.yaml \n",
-                               "sed -i -e \"s/\\[K8SAPI\\]/$(hostname -I | awk '{print $1}')/g\" contrail-wraith.yaml \n",
-                               "sed -i -e \"s/\\[RELEASE\\]/", { "Ref": "ContainerRegistryTag" }, "/g\" contrail-wraith.yaml \n",
-                               "sed -i -e \"s/\\[K8SAPIPORT\\]/6443/g\" contrail-wraith.yaml \n",
-                               "sed -i -e \"s/\\[ASN\\]/", { "Ref": "k8sBaseASN" }, "/g\" contrail-wraith.yaml \n",
-                               "export PODIPAM=$(echo ", { "Ref": "k8sPodBaseIP" }, ")\n",
-                               "export SERVICEIPAM=$(echo ", { "Ref": "k8sServiceBaseIP" }, ")\n",
-                               "export FABRICIPAM=$(echo ", { "Ref": "k8sFabricBaseIP" }, ")\n",
-                               "export PODIPAM=$(sed 's/\\//\\\\\\//g' <<< $PODIPAM)\n",
-                               "export SERVICEIPAM=$(sed 's/\\//\\\\\\//g' <<< $SERVICEIPAM)\n",
-                               "export FABRICIPAM=$(sed 's/\\//\\\\\\//g' <<< $FABRICIPAM)\n",
-                               "sed -i -e \"s/\\[PODSN\\]/$PODIPAM/g\" contrail-wraith.yaml \n",
-                               "sed -i -e \"s/\\[SERVICESN\\]/$SERVICEIPAM/g\" contrail-wraith.yaml \n",
-                               "sed -i -e \"s/\\[FABRICSN\\]/$FABRICIPAM/g\" contrail-wraith.yaml \n",
-                               "if [ ", { "Ref": "DebugLogs" }, " == true ] ; then\n",
-                               "    echo \"Enabling Contrail debug logs\"\n",
-                               "    sed -i -e \"s/SYS_NOTICE/SYS_DEBUG/g\" contrail-wraith.yaml \n",
-                               "fi\n",
-                               "kubectl label node --all node-role.opencontrail.org/agent=\n",
-                               "kubectl create secret docker-registry contrail-registry --namespace=kube-system --docker-server=hub.juniper.net --docker-username=", { "Ref": "ContainerRegistryUserName" }, " --docker-password=", { "Ref": "ContainerRegistryPassword" }, " --docker-email=sgreen@juniper.net\n",
-                               "mkdir -p /var/lib/contrail/config-zookeeper \n",
-                               "kubectl apply -f contrail-wraith.yaml \n",
-                               "cat > /root/wait-for-pods2.sh <<EOF\n",
-                               "#!/bin/bash\n",
-                               "while [[ \\$(kubectl  get pods --no-headers=true -n kube-system | wc -l) -le 10 ]];\n",
-                               "do\n",
-                               "     echo \"waiting for pods to show up\" && sleep 10;\n",
-                               "done\n",
-                               "for  i in \\$(kubectl  get pods --no-headers=true -n kube-system | awk '/contrail-/{print \\$1}')\n",
-                               "do\n",
-                               "       while [[ \\$(kubectl  get pod \\$i -n kube-system -o 'jsonpath={..status.conditions[?(@.type==\"Ready\")].status}') != \"True\" ]];\n",
-                               "       do\n",
-                               "             echo \"waiting for Contrail pod \\$i\" && sleep 10;\n",
-                               "       done\n",
-                               "done\n",
-                               "EOF\n",
-                               "chmod a+x /root/wait-for-pods2.sh\n",
-                               "/root/wait-for-pods2.sh\n",
-                               "kubectl get pods --all-namespaces\n",
-                               "kubectl get pods -n kube-system -oname |grep coredns |xargs kubectl delete -n kube-system\n",
-                               "#docker login hub.juniper.net --username ", { "Ref": "ContainerRegistryUserName" }, " --password ", { "Ref": "ContainerRegistryPassword" }, "\n",
-                               "export PODNAME=$(kubectl get pods -n kube-system --no-headers=true | awk '/contrail-controller-config/{print $1}' | head -n 1)\n",
-                               "export MYHOSTNAME=$(curl http://169.254.169.254/latest/meta-data/hostname)\n",
-                               "export MYHOSTIP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)\n",
-                               "wget https://s3-eu-central-1.amazonaws.com/contrail-one-click-deployers/Testing-k8s.zip -O /root/Testing-k8s.zip \n",
-                               "unzip /root/Testing-k8s.zip -d /root \n",
-                               "kubectl exec -i $PODNAME -n kube-system -c contrail-controller-config-api -- python /opt/contrail/utils/provision_global_vrouter_config.py --api_server_ip $MYHOSTIP --oper add --admin_user admin --admin_password ", { "Ref": "ContrailPassword" }, " --admin_tenant_name admin --flow_export_rate -1 \n",
-                               "kubectl exec -i $PODNAME -n kube-system -c contrail-controller-config-api -- python /opt/contrail/utils/add_route_target.py --api_server_ip $MYHOSTIP --api_server_port 8082 --admin_user admin --admin_password contrail123 --admin_tenant_name admin --router_asn 64513 --route_target_number 1000 --routing_instance_name default-domain:k8s-default:k8s-default-pod-network:__default__\n",
-                               "kubectl exec -i $PODNAME -n kube-system -c contrail-controller-config-api -- python /opt/contrail/utils/add_route_target.py --api_server_ip $MYHOSTIP --api_server_port 8082 --admin_user admin --admin_password contrail123 --admin_tenant_name admin --router_asn 64513 --route_target_number 1000 --routing_instance_name default-domain:k8s-default:k8s-default-service-network:__default__\n",
-                               "kubectl exec -i $PODNAME -n kube-system -c contrail-controller-config-api -- python /opt/contrail/utils/provision_mx.py --api_server_ip $MYHOSTIP --api_server_port 8082 --admin_user admin --admin_password contrail123 --admin_tenant_name admin --router_name ", { "Ref": "MX1Name" }, " --router_ip ", { "Ref": "MX1IPAddress" }, " --product_name MX80 --device_user ", { "Ref": "MX1User" }, " --device_password ", { "Ref": "MX1Password" }, " --router_asn ", { "Ref": "MX1ASN" }, " --peer_list $MYHOSTNAME --oper add\n",
-                               "kubectl exec -i $PODNAME -n kube-system -c contrail-controller-config-api -- python /opt/contrail/utils/provision_mx.py --api_server_ip $MYHOSTIP --api_server_port 8082 --admin_user admin --admin_password contrail123 --admin_tenant_name admin --router_name ", { "Ref": "MX2Name" }, " --router_ip ", { "Ref": "MX2IPAddress" }, " --product_name MX80 --device_user ", { "Ref": "MX2User" }, " --device_password ", { "Ref": "MX2Password" }, " --router_asn ", { "Ref": "MX2ASN" }, " --peer_list $MYHOSTNAME --oper add\n",
-                               "export K8SSERVICEIP=$(kubectl get service/kubernetes --no-headers | awk '{print $3}')\n",
-                               "kubectl exec -i $PODNAME -n kube-system -c contrail-controller-config-api -- python /opt/contrail/utils/provision_linklocal.py --api_server_ip $MYHOSTIP --api_server_port 8082 --admin_user admin --admin_password contrail123 --admin_tenant_name admin --linklocal_service_name default-domain-k8s-default-kubernetes-443 --linklocal_service_ip $K8SSERVICEIP --linklocal_service_port 443 --ipfabric_service_ip $MYHOSTIP --ipfabric_service_port 6443 --oper add\n",
-
-                               "#################\n",
-                               "#finish off wraith\n",
-                               "#################\n",
-                               "#kubectl get daemonset wraith -n cattle-system\n",
-                               "#kubectl get pod -n cattle-system\n",
-                               "cat > /root/wait-for-reset.sh <<EOF\n",
-                               "#!/bin/bash\n",
-                               "while ! wraithd reset-admin --password ", { "Ref": "ContrailPassword" }, "\n", 
-                               "do\n",
-                               "    echo waiting for wrait to reset the password\n", 
-                               "    sleep 10\n",
-                               "done\n",
-                               "EOF\n",
-                               "chmod a+x /root/wait-for-reset.sh\n",
-                               "/root/wait-for-reset.sh\n",
-                               "# echo \"MTU=", { "Ref": "NodeMTU" }, "\" >> /etc/sysconfig/network-scripts/ifcfg-eth0\n",
-                               "# echo \"network:\" > /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg\n",
-                               "# echo \"  config: disabled\" >> /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg\n",
-                               "# ip link set dev eth0 mtu ", { "Ref": "NodeMTU" }, "\n",
-                               "# cd /root\n",
-                               "# wget ", { "Ref": "InstallerCS3Location" }, " -O contrail-k8s-wraith.yaml\n",
-                               "# modprobe br_netfilter\n",
-                               "# setenforce 0\n",
-                               "# sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config\n",
-                               "# sed -i '/swap/d' /etc/fstab\n",
                                "swapoff -a\n",
-                               "mkdir -p /var/lib/contrail/config-zookeeper\n",
                                "apt-get update\n",
                                "apt-get remove -y --purge unattended-upgrades\n",
                                "apt install -y python-pip\n",
@@ -941,16 +601,6 @@
                                "cat /root/.ssh/id_rsa.pub | tee --append /root/.ssh/authorized_keys\n",
                                "chmod 0600 /root/.ssh/id_rsa*\n",
                                "systemctl restart sshd.service\n",
-                               "# echo \"MTU=", { "Ref": "NodeMTU" }, "\" >> /etc/sysconfig/network-scripts/ifcfg-eth0\n",
-                               "# echo \"network:\" > /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg\n",
-                               "# echo \"  config: disabled\" >> /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg\n",
-                               "# ip link set dev eth0 mtu ", { "Ref": "NodeMTU" }, "\n",
-                               "# cd /root\n",
-                               "# wget ", { "Ref": "InstallerCS3Location" }, " -O contrail-k8s-wraith.yaml\n",
-                               "# modprobe br_netfilter\n",
-                               "# setenforce 0\n",
-                               "# sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config\n",
-                               "# sed -i '/swap/d' /etc/fstab\n",
                                "swapoff -a\n",
                                "#################\n",
                                "#install wowraithr node\n",

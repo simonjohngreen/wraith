@@ -1,0 +1,307 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Deploys wraith nmap nodes for port scanning, each node gets its own public ip to allow the attack to be distributed",
+    "Parameters": {
+        "AvailabilityZone1": {
+            "Description": "AWS Availability Zone For the nodes",
+            "Type": "String",
+            "Default": "eu-west-3a"
+        },
+        "WraithNodeInstanceType": {
+            "Description": "wraith node Instance Type",
+            "Type": "String",
+            "Default": "m5.large"
+        },
+        "KeyName": {
+            "Description": "SSH Key Name",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Default": "ContrailKey"
+        },
+        "SiteName": {
+            "Description": "Site Name",
+            "Type": "String",
+            "Default": "wraith-nmap"
+        },
+        "idVPC": {
+            "Description": "Existing VPCid where the nodes will sit",
+            "Type": "String"
+        },
+        "idPublicSubnet1": {
+            "Description": "Existing Public Subnet 1 id",
+            "Type": "String"
+        },
+        "NMAPVersion": {
+            "Description": "NMAP version to install, default is 1.18.9",
+            "Type": "String",
+            "Default": "7.91-1"
+        },
+        "NumberOfNodes": {
+            "Description": "Number of Contrail+microK8s clusters to deploy in the auto scaling group",
+            "Type": "String",
+            "Default": "2"
+         },
+        "DebugLogs": {
+            "Description": "if true we will enable SYS_DEBUG log level",
+            "Type": "String",
+            "Default": "false"
+        },
+        "ExternaldnsEnabled": {
+            "Description": "true if you want to deploy external DNS into AWS with a test app",
+            "Type": "String",
+            "Default": "true"
+        },
+        "ExternaldnsCreateZone": {
+            "Description": "true if you want the stack to create the zone",
+            "Type": "String",
+            "Default": "false"
+        },
+        "ExternaldnsDomainFilter": {
+            "Description": "domain for the external dns to monitor",
+            "Type": "String",
+            "Default": "incubator.dev.int.foobarservices.com"
+        },
+        "ExternaldnsZoneID": {
+            "Description": "if using an existing domain enter the hosted zone ID here",
+            "Type": "String",
+            "Default": "Z09733143J0NHZEXWD6B"
+        }
+    },
+    "Mappings": {
+        "AWSRegionArch2AMI": {
+            "ca-central-1": { "UBUNTU18XHVM": "ami-0dc24446d93e1b2f3" },
+            "ap-southeast-1": { "UBUNTU18XHVM": "ami-07c4661e10b404bbb" },
+            "ap-southeast-2": { "UBUNTU18XHVM": "ami-0ff0fa9d409d5181c" },
+            "eu-west-1": { "UBUNTU18XHVM": "ami-0f52887e1cb557b55" },
+            "eu-west-2": { "UBUNTU18XHVM": "ami-0820357ff5cf2333d" },
+            "eu-west-3": { "UBUNTU18XHVM": "ami-04d53e1b6d843f8fa" },
+            "eu-central-1": { "UBUNTU18XHVM": "ami-0494594c0ab2e6df4" },
+            "cn-north-1": { "UBUNTU18XHVM": "ami-05248307900d52e3a" },
+            "cn-northwest-1": { "UBUNTU18XHVM": "ami-075c9f159ee0bdc1c" },
+            "us-east-1": { "UBUNTU18XHVM": "ami-0b893eef6e21b60a1" },
+            "us-east-2": { "UBUNTU18XHVM": "ami-0ebc84cad4ab1c308" },
+            "us-west-1": { "UBUNTU18XHVM": "ami-00da7d550c0cbaa7b" },
+            "us-west-2": { "UBUNTU18XHVM": "ami-0f004f40550f73050" },
+            "ap-northeast-1": { "UBUNTU18XHVM": "ami-071c64dd45080ce0b" },
+            "eu-north-1": { "UBUNTU18XHVM": "ami-01cc5333d19d509d3" },
+            "eu-south-1": { "UBUNTU18XHVM": "ami-0958f3c538b50dfba" },
+            "ap-south-1": { "UBUNTU18XHVM": "ami-02def66f5c32f4f2b" },
+            "ap-northeast-2": { "UBUNTU18XHVM": "ami-005ede73f888b317f" },
+            "ap-northeast-3": { "UBUNTU18XHVM": "ami-0d371383d68608b49" },
+            "af-south-1": { "UBUNTU18XHVM": "ami-07ab6ee42fc89ba35" },
+            "me-south-1": { "UBUNTU18XHVM": "ami-04b3755011880400f" },
+            "sa-east-1": { "UBUNTU18XHVM": "ami-004c8f619d7ca0f36" }
+        }
+    },
+    "Conditions": {
+        "HasExternaldnsCreateZone": { "Fn::Equals": [{ "Ref": "ExternaldnsCreateZone" }, "true"] }
+    },
+    "Resources": {
+        "R53ZONE": {
+            "Type": "AWS::Route53::HostedZone",
+            "Condition": "HasExternaldnsCreateZone",
+            "Properties": {
+               "HostedZoneConfig": {
+                  "Comment": { "Ref": "ExternaldnsDomainFilter" } 
+               },
+               "Name": { "Ref": "ExternaldnsDomainFilter" },
+               "VPCs": [
+                  {
+                     "VPCId": { "Ref": "idVPC" }, 
+                     "VPCRegion": { "Ref": "AWS::Region"}
+                  }
+               ]
+            }
+        },
+        "SecurityGroupWraith": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "VpcId": { "Ref": "idVPC" },
+                "GroupDescription": "Security group for Wraith NMAP Instances",
+                "GroupName": { "Fn::Join": [".", ["Wraith_NMAP_SG1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] },
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "FromPort": "-1",
+                        "ToPort": "-1",
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "allow all outbound traffic"
+		    }
+		],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join" : [ ".", [ "Contrail_Wraith_NMAP_Security_Group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] }
+                    }
+                ]
+            }
+        },
+        "SGIngressSecurityGroupWraith": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "SecurityGroupWraith"
+                },
+                "IpProtocol": "-1",
+                "FromPort": "-1",
+                "ToPort": "-1",
+                "SourceSecurityGroupId": {
+                    "Ref": "SecurityGroupWraith"
+                },
+                "Description": "loopback rule"
+            }
+        },
+        "wraithNodeLaunchConfig" : {
+           "Type" : "AWS::AutoScaling::LaunchConfiguration",
+           "Properties" : {
+              "ImageId": {
+                 "Fn::FindInMap" : ["AWSRegionArch2AMI", {"Ref" : "AWS::Region"}, "UBUNTU18XHVM"]
+              },
+              "SecurityGroups" : [ { "Ref" : "myEC2SecurityGroup" }, "myExistingEC2SecurityGroup" ],
+              "AssociatePublicIpAddress" : true,
+              "InstanceType": {
+                 "Ref": "WraithNodeInstanceType"
+              },
+              "BlockDeviceMappings": [
+                 {
+                      "DeviceName": "/dev/sda1",
+                      "Ebs": {
+                      "VolumeSize": "300"
+                      }
+                 }
+              ],
+              "KeyName": {
+                 "Ref": "KeyName"
+              },
+              "IamInstanceProfile": { "Ref": "wraithInstanceProfile" },
+              "SecurityGroups"        : [ { "Ref" : "SecurityGroupWraith" } ],
+              "LaunchConfigurationName" : "wraithNodeLaunchConfig",
+              "UserData": {
+                 "Fn::Base64": {
+                   "Fn::Join": [
+                       "",
+                       [ 
+                         "#!/bin/bash -x\n",
+                         "exec > /tmp/part-001.log 2>&1\n",
+                               "sed -i \"s/^#PermitRootLogin yes/PermitRootLogin yes/g\" /etc/ssh/sshd_config\n",
+                               "mkdir /root/.ssh\n",
+                               "echo \"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7jYYnix/CUn2u161qoN/Jmv9Lnr5E9/MdP4pBzXjYfqVU9i7wHz2nSnfMTWaRDuv1fw4akrswDe7Q2f3vLnOjq50AlcgagfnTDNQCNgg8S6nRvCQ9TxkGUHZLLZ2K97znfDUug2LLCC9sor953IQOpZFiH2sE9m3ZMjRBJgSIdGNByVkY9hu0upoZBOY5jPC24zClwXsH81Nz9GDTceCaaa5X87W3PDYOHn9fyujaxl6lXkcscjvoCdQU8TYWCxY7d2MeS9TpzVQIhyJGntIAZ1gGSkIL/0xW/pIVP7btjFaTrO7ubC2sbB/RwEjJWbBdce1NZ/yj7QG6X8hXfGKf root@ip-100-72-100-11.eu-west-1.compute.internal\" | tee --append /root/.ssh/id_rsa.pub\n",
+                               "echo -e \"-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAu42GJ4sfwlJ9rtetaqDfyZr/S56+RPfzHT+KQc142H6lVPYu\n8B89p0p3zE1mkQ7r9X8OGpK7MA3u0Nn97y5zo6udAJXIGoH50wzUAjYIPEup0bwk\nPU8ZBlB2Sy2dive853w1LoNiywgvbKK/edyEDqWRYh9rBPZt2TI0QSYEiHRjQclZ\nGPYbtLqaGQTmOYzwtuMwpcF7B/NTc/Rg03HgmmmuV/O1tzw2Dh5/X8ro2sZepV5H\nLHI76AnUFPE2FgsWO3djHkvU6c1UCIciRp7SAGdYBkpCC/9MVv6SFT+27YxWk6zu\n7mwtrGwf0cBIyVmwXXHtTWf8o+0Bul/IV3xinwIDAQABAoIBAF2Q6ieaIZr5Olha\noto6LcrPN6PLKxMPO8sQovHXBv3CmMq9EoeanlByNzfGOXAOqKrN2wRoxVfg645n\n4mZLn0c821OqZazLwQ2ILdB4kj06ZhsLKG0po8thotI4jIsCsswtS/7LbyLpD3e7\n7Zhm6b7A3Lm+AM71/bFIeYcy5zoHMnDbNmNKdyMn4WWyqrbcdC21T9psRGXiRIE+\n5sIOI1pU9fz0yzO9nFXGjidyhNqbAFDFoDHmazs7OMiY97GphyiUlh8hj/Mwrjzg\n8Uk8yLw8sMH41mm/eoWlp9VaRqZgUK+lgakxCHuk1hAsrJnSW5NnCOHRjFCe5OAY\nMY4zdNECgYEA9MBK/Gc/3utvDXSVusIUBkedlmzWcKDkQdzgNQB1Y59AN2jwt6oP\nFwEVGgR4TDm2BPy+pxoEqTHNIh/5gTVIgp3O6uX8zDSRNclqYnIehtimZR3jetRS\nzuGZbO9603KakRTJRGh04Ggy5yDvBHRK7OyotLXoyCNebcJZbMB6JskCgYEAxCw+\nb7+Sb4L7adVs+2UAC2vCnmXUadsx+LfeDvSb3xAoz+vtq5MR21mnT47irC+v+tsC\neoP1F7zNiIez454oJebeu8Nk/REXPlxPCi6LgZrDsHsxTfNXvJUk5Yt6rSanxSrH\nT7zLLsF4AxY5oEyD+X4Xlrd4lHTxiWoHPMqnqicCgYBf6he40HGcV6FeoYin9rTI\nPTqJn79txe+NzBRlUPewAdG1pT9oipF9T2RInOXT4W3uiGnirHSVJbohHGy38Pyo\ni1VygozOLe+WJ4e0asqBx9d1mv/xu9Fz1787jKISyT+/iWjSkSj0ZIFGSIbCtRxD\nuv7mSr+d5xZzZw2Ka+ey2QKBgF5lq+W6GYzvSmuy965A+7SDNjNibMRDZdh5IbGw\noxDDheAHd2aIbp9OlOQDra+NgvEDUj4CIX46q+x24Gk3Qbp7TdKsQ3xDLRwk7yPH\nIfpLrr7NiPwpjJ6CZi7O30lSwIhv/VixUFQ/ZLCXkUNBjoAP3On5f1xwqYmmK7Vl\nDykhAoGBALPivmGopBZhADOiJj7pIIeVB31uXnzCog3SfSvS4bVeRdLsyRct6vnI\n94wexgUA7CfWgQqqdgARSAe2JL5C9FEQKwa6lPfoi9Ft6NrO5UX7oqDgEVinQZzZ\nnYfyuaPvdQoBO5LE14jHfKTws+/vbgc0u7zONkOwpiHHLIhfJocA\n-----END RSA PRIVATE KEY-----\" | tee --append /root/.ssh/id_rsa\n",
+                               "cat /root/.ssh/id_rsa.pub | tee --append /root/.ssh/authorized_keys\n",
+                               "chmod 0600 /root/.ssh/id_rsa*\n",
+                               "systemctl restart sshd.service\n",
+                               "swapoff -a\n",
+                               "#################\n",
+                               "#install Wraith NMAP node\n",
+                               "#################\n",
+                               "cd /root\n",
+                               "apt-get update\n",
+                               "apt-get remove -y --purge unattended-upgrades\n",
+                               "apt install -y python-pip\n",
+                               "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                               "/usr/local/bin/cfn-signal -e $? ",
+                                   "  --stack ", { "Ref": "AWS::StackName" },
+                                   "  --resource wraithNodeAutoScalingGroup " ,
+                                   "  --region ", { "Ref" : "AWS::Region" }, "\n"
+                       ]
+                    ]
+                 }
+             }
+           }
+        },
+        "wraithNodeAutoScalingGroup" : {
+           "Type" : "AWS::AutoScaling::AutoScalingGroup",
+           "Properties" : {
+              "VPCZoneIdentifier" : [ { "Ref": "idPublicSubnet1" } ],
+              "LaunchConfigurationName" : { "Ref" : "wraithNodeLaunchConfig" },
+              "MinSize" : { "Ref": "NumberOfNodes" },
+              "MaxSize" : { "Ref": "NumberOfNodes" },
+              "Tags": [
+                   {
+                       "Key": "Name",
+                       "Value": { "Fn::Join" : [ ".", [ "Wraith_nmap_autoscaling_group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] },
+                       "PropagateAtLaunch": "true"
+                   }
+               ]
+           },
+           "CreationPolicy": {
+              "ResourceSignal": {
+                "Count": "1",
+                "Timeout": "PT30M"
+              }
+           }
+        },
+        "wraithRole": {
+           "Type": "AWS::IAM::Role",
+           "Properties": {
+              "AssumeRolePolicyDocument": {
+                 "Statement": [{
+                    "Effect": "Allow",
+                    "Principal": {
+                       "Service": ["ec2.amazonaws.com"]
+                    },
+                    "Action": ["sts:AssumeRole"]
+                 }]
+              },
+              "Path": "/"
+           }
+        },
+        "wraithInstanceProfile": {
+           "Type": "AWS::IAM::InstanceProfile",
+           "Properties": {
+              "Path": "/",
+              "Roles": [{ "Ref": "wraithRole" }]
+           }
+        },
+        "wraithRolePolicies":{
+            "Type":"AWS::IAM::Policy",
+            "Properties":{
+               "PolicyName":"wraithIAMPolicy",
+               "PolicyDocument":{
+                  "Statement":[
+                     {
+                        "Effect":"Allow",
+                        "Action":[
+                           "ec2:DescribeInstances",
+                           "autoscaling:DescribeAutoScalingInstances"
+                        ],
+                        "Resource":"*"
+                     },
+                     {
+                        "Effect":"Allow",
+                        "Action":[
+                           "route53:ChangeResourceRecordSets"
+                        ],
+                        "Resource":"arn:aws:route53:::hostedzone/*"
+                     },
+                     {
+                        "Effect":"Allow",
+                        "Action":[
+                           "route53:ListHostedZones",
+                           "route53:ListResourceRecordSets"
+                        ],
+                        "Resource":"*"
+                     },
+                     {
+                        "Effect":"Allow",
+                        "Action":[
+                           "s3:*"
+                        ],
+                        "Resource":"*"
+                     }
+                  ]
+               },
+               "Roles":[
+                  {
+                     "Ref":"wraithRole"
+                  }
+               ]
+            }
+        }
+    },
+    "Outputs": {
+        "Note1": {
+            "Description": "NA",
+            "Value": "All done, Go Destroy (but don't forget to tell AWS)" 
+        }
+    }
+}

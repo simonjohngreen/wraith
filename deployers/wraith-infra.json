@@ -5,17 +5,17 @@
         "AvailabilityZone1": {
             "Description": "AWS Availability Zone One",
             "Type": "String",
-            "Default": "eu-west-1a"
+            "Default": "eu-west-3a"
         },
         "AvailabilityZone2": {
             "Description": "AWS Availability Zone Two",
             "Type": "String",
-            "Default": "eu-west-1b"
+            "Default": "eu-west-3b"
         },
         "AvailabilityZone3": {
             "Description": "AWS Availability Zone Three",
             "Type": "String",
-            "Default": "eu-west-1c"
+            "Default": "eu-west-3c"
         },
         "VPCCIDR1": {
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
@@ -29,27 +29,6 @@
             "ConstraintDescription": "CIDR block for the NAT GW parameter must be in the form x.x.x.x/16-28",
             "Description": "CIDR block for the public subnet",
             "Default": "100.72.103.0/24",
-            "Type": "String"
-        },
-        "PrivateSubnetCIDR1": {
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
-            "Description": "CIDR block for the private subnet AZ1",
-            "Default": "100.72.100.0/24",
-            "Type": "String"
-        },
-        "PrivateSubnetCIDR2": {
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
-            "Description": "CIDR block for the private subnet AZ2",
-            "Default": "100.72.101.0/24",
-            "Type": "String"
-        },
-        "PrivateSubnetCIDR3": {
-            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/16-28",
-            "Description": "CIDR block for the private subnet AZ3",
-            "Default": "100.72.102.0/24",
             "Type": "String"
         },
         "SiteName": {
@@ -92,48 +71,6 @@
                 "Tags": [{
                     "Key": "Name",
                     "Value": { "Fn::Join": [".", ["ContrailPublicSN1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
-                }]
-            }
-        },
-        "PrivateSubnet1": {
-            "Type": "AWS::EC2::Subnet",
-            "Properties": {
-                "AvailabilityZone": { "Ref": "AvailabilityZone1" },
-                "VpcId": { "Ref": "VPC1" },
-                "CidrBlock": {
-                    "Ref": "PrivateSubnetCIDR1"
-                },
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": { "Fn::Join": [".", ["ContrailPrivateSN1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
-                }]
-            }
-        },
-        "PrivateSubnet2": {
-            "Type": "AWS::EC2::Subnet",
-            "Properties": {
-                "AvailabilityZone": { "Ref": "AvailabilityZone2" },
-                "VpcId": { "Ref": "VPC1" },
-                "CidrBlock": {
-                    "Ref": "PrivateSubnetCIDR2"
-                },
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": { "Fn::Join": [".", ["ContrailPrivateSN2", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone2" }]] }
-                }]
-            }
-        },
-        "PrivateSubnet3": {
-            "Type": "AWS::EC2::Subnet",
-            "Properties": {
-                "AvailabilityZone": { "Ref": "AvailabilityZone3" },
-                "VpcId": { "Ref": "VPC1" },
-                "CidrBlock": {
-                    "Ref": "PrivateSubnetCIDR3"
-                },
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": { "Fn::Join": [".", ["ContrailPrivateSN3", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone3" }]] }
                 }]
             }
         },
@@ -180,126 +117,6 @@
                 }]
             }
         },
-        "PrivateSubnetRouteTable1": {
-            "Type": "AWS::EC2::RouteTable",
-            "Properties": {
-                "VpcId": { "Ref": "VPC1" },
-                "Tags": [{
-                        "Key": "Name",
-                        "Value": { "Fn::Join": [".", ["ControllerPrivateRouteTable1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
-                    },
-                    {
-                        "Key": "CloudFormationStack",
-                        "Value": {
-                            "Ref": "AWS::StackId"
-                        }
-                    }
-                ]
-            }
-        },
-        "PrivateSubnetRoute": {
-            "Type": "AWS::EC2::Route",
-            "Properties": {
-                "RouteTableId": {
-                    "Ref": "PrivateSubnetRouteTable1"
-                },
-                "DestinationCidrBlock": "0.0.0.0/0",
-                "NatGatewayId": {
-                    "Ref": "NAT"
-                }
-            }
-        },
-        "PrivateSubnetRouteTableAssociation1": {
-            "Type": "AWS::EC2::SubnetRouteTableAssociation",
-            "Properties": {
-                "SubnetId": {
-                    "Ref": "PrivateSubnet1"
-                },
-                "RouteTableId": {
-                    "Ref": "PrivateSubnetRouteTable1"
-                }
-            }
-        },
-        "PrivateSubnetRouteTable2": {
-            "Type": "AWS::EC2::RouteTable",
-            "Properties": {
-                "VpcId": { "Ref": "VPC1" },
-                "Tags": [{
-                        "Key": "Name",
-                        "Value": { "Fn::Join": [".", ["ControllerPrivateRouteTable2", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone2" }]] }
-                    },
-                    {
-                        "Key": "CloudFormationStack",
-                        "Value": {
-                            "Ref": "AWS::StackId"
-                        }
-                    }
-                ]
-            }
-        },
-        "PrivateSubnetRoute2": {
-            "Type": "AWS::EC2::Route",
-            "Properties": {
-                "RouteTableId": {
-                    "Ref": "PrivateSubnetRouteTable2"
-                },
-                "DestinationCidrBlock": "0.0.0.0/0",
-                "NatGatewayId": {
-                    "Ref": "NAT"
-                }
-            }
-        },
-        "PrivateSubnetRouteTableAssociation2": {
-            "Type": "AWS::EC2::SubnetRouteTableAssociation",
-            "Properties": {
-                "SubnetId": {
-                    "Ref": "PrivateSubnet2"
-                },
-                "RouteTableId": {
-                    "Ref": "PrivateSubnetRouteTable2"
-                }
-            }
-        },
-        "PrivateSubnetRouteTable3": {
-            "Type": "AWS::EC2::RouteTable",
-            "Properties": {
-                "VpcId": { "Ref": "VPC1" },
-                "Tags": [{
-                        "Key": "Name",
-                        "Value": { "Fn::Join": [".", ["ControllerPrivateRouteTable3", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone3" }]] }
-                    },
-                    {
-                        "Key": "CloudFormationStack",
-                        "Value": {
-                            "Ref": "AWS::StackId"
-                        }
-                    }
-                ]
-            }
-        },
-        "PrivateSubnetRoute3": {
-            "Type": "AWS::EC2::Route",
-            "Properties": {
-                "RouteTableId": {
-                    "Ref": "PrivateSubnetRouteTable3"
-                },
-                "DestinationCidrBlock": "0.0.0.0/0",
-                "NatGatewayId": {
-                    "Ref": "NAT"
-                }
-            }
-        },
-        "PrivateSubnetRouteTableAssociation3": {
-            "Type": "AWS::EC2::SubnetRouteTableAssociation",
-            "Properties": {
-                "SubnetId": {
-                    "Ref": "PrivateSubnet3"
-                },
-                "RouteTableId": {
-                    "Ref": "PrivateSubnetRouteTable3"
-                }
-            }
-        },
         "PublicRouteTable1": {
             "Type": "AWS::EC2::RouteTable",
             "Properties": {
@@ -343,10 +160,6 @@
         "idPublicSubnet1": {
             "Description": "past this idPublicSubnet1 into stack2",
             "Value": {"Ref": "PublicSubnet1"}
-        },
-        "idPrivateSubnet1": {
-            "Description": "past this idPrivateSubnet1 into stack2",
-            "Value": {"Ref": "PrivateSubnet1"}
         }
     }
 

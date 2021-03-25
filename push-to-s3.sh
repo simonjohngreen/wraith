@@ -7,8 +7,8 @@
 # Simon Green                                                                 #
 #                                                                             #
 ###############################################################################
-S3BucketName="wraith23874984"
-AWSAZ="eu-central-1"
+S3BucketName="wraithdeployer"
+AWSAZ="eu-west-3"
 PathForTheDeployers="./deployers/"
 
 echo "*******************************************************************************"
