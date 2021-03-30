@@ -15,7 +15,7 @@
         "KeyName": {
             "Description": "SSH Key Name",
             "Type": "AWS::EC2::KeyPair::KeyName",
-            "Default": "WraithKey"
+            "Default": "ContrailKey"
         },
         "SiteName": {
             "Description": "Site Name",
@@ -35,28 +35,8 @@
             "Type": "String",
             "Default": "7.91-1"
         },
-        "EmailServerURL": {
-            "Description": "smtp url for your email account",
-            "Type": "String"
-        },
-        "EmailUsername": {
-            "Description": "smtp email account user name",
-            "Type": "String"
-        },
-        "EmailPassword": {
-            "Description": "smtp email account user name",
-            "Type": "String"
-        },
-        "EmailFromAddress": {
-            "Description": "Email address to mark the emails as sent from, for icloud and gmail its the same as EmailUsername, for AWS SES this will need to be validated",
-            "Type": "String"
-        },
-        "EmailToAddress": {
-            "Description": "Email address to send the reports to",
-            "Type": "String"
-        },
         "NumberOfNodes": {
-            "Description": "Number of instances to deploy in the auto scaling group",
+            "Description": "Number of Contrail+microK8s clusters to deploy in the auto scaling group",
             "Type": "String",
             "Default": "2"
          },
@@ -84,18 +64,6 @@
             "Description": "if using an existing domain enter the hosted zone ID here",
             "Type": "String",
             "Default": "Z09733143J0NHZEXWD6B"
-        },
-        "S3BucketID": {
-            "Description": "Reports S3 Bucket ID",
-            "Type": "String"
-        },
-        "tempS3bucketURL": {
-         "Type": "String",
-         "Description": "Temp S3 Bucket used to store the cloudformation yamls"
-        },
-        "TempS3bucket": {
-         "Type": "String",
-         "Description": "Temp S3 Bucket name , used to get the wraith config files"
         }
     },
     "Mappings": {
@@ -162,7 +130,7 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join" : [ ".", [ "Wraith_NMAP_Security_Group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] }
+                        "Value": { "Fn::Join" : [ ".", [ "Contrail_Wraith_NMAP_Security_Group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] }
                     }
                 ]
             }
@@ -197,7 +165,7 @@
                  {
                       "DeviceName": "/dev/sda1",
                       "Ebs": {
-                      "VolumeSize": "30"
+                      "VolumeSize": "300"
                       }
                  }
               ],
@@ -222,80 +190,13 @@
                                "apt-get update\n",
                                "apt-get remove -y --purge unattended-upgrades\n",
                                "apt-get -y install nmap jq fop\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/wraith-config.xml -o wraith-config.xml\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/wraith-config.json -o wraith-config.json\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/wraith-endpoints-ipv4 -o wraith-endpoints-ipv4\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/wraith-endpoints-ipv6 -o wraith-endpoints-ipv6\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/nmap-fo.xsl -o nmap-fo.xsl\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/nmap-runner.sh -o nmap-runner.sh\n",
                                "apt install -y python-pip\n",
-                               "curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
-                               "unzip /tmp/awscli-bundle.zip -d /tmp\n",
-                               "sudo /tmp/awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-config.xml /root\n", 
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-config.json /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-endpoints-ipv4 /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-endpoints-ipv6 /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/nmap-fo.xsl /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/nmap-runner.sh /root\n",
-                               "####### msmtp setup for emailing reports################\n",
-                               "sudo apt-get -y install msmtp msmtp-mta ca-certificates\n",
-                               "sudo mkdir -p /etc/msmtp\n",
-                               "sudo mkdir -p /var/log/msmtp\n",
-                               "cat > /etc/msmtp/wraith0 <<EOF\n",
-                               "# Define here some settings that can be useful for every account\n",
-                               "defaults\n",
-                               "        logfile /var/log/msmtp/general.log\n",
-                               "# Settings for wraith0 account\n",
-                               "account wraith0\n",
-                               "        protocol smtp\n",
-                               "        host ",{ "Ref" : "EmailServerURL" }, "\n",
-                               "        tls on\n",
-                               "        tls_trust_file /etc/ssl/certs/ca-certificates.crt\n",
-                               "        port 587\n",
-                               "        auth login\n",
-                               "        user ",{ "Ref" : "EmailUsername" }, "\n",
-                               "        password ",{ "Ref" : "EmailPassword" }, "\n",
-                               "        from ",{ "Ref" : "EmailFromAddress" }, "\n",
-                               "        logfile /var/log/msmtp/wraith0.log\n",
-                               "# If you don't use the -a parameter in your command line,\n",
-                               "# the default account wraith0 will be used.\n",
-                               "account default: wraith0\n",
-                               "EOF\n",
-                               "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install mutt\n",
-                               "cat > /root/muttrc <<EOF\n",
-                               "set sendmail=\"/usr/bin/msmtp --file=/etc/msmtp/wraith0\"\n",
-                               "set use_from=yes\n",
-                               "set realname=\"",{ "Ref" : "EmailFromAddress" }, "\"\n",
-                               "set from=\"",{ "Ref" : "EmailFromAddress" }, "\"\n",
-                               "set envelope_from=yes\n",
-                               "EOF\n",
-                               "cat > /root/emailmessage.txt <<EOF\n",
-                               "From:  \"",{ "Ref" : "EmailFromAddress" }, "\"\n",
-                               "Subject: icloud attachment Test\n",
-                               "This message was sent using icloud\n",
-                               "EOF\n",
-                               "sed -i -e \"s/\\[EmailToAddress\\]/", { "Ref": "EmailToAddress" }, "/g\" /root/nmap-runner.sh \n",
-                               "sed -i -e \"s/\\[S3BucketID\\]/", { "Ref": "S3BucketID" }, "/g\" /root/nmap-runner.sh \n",
-                               "touch /var/log/wraith.log\n",
-                               "cat > /etc/logrotate.d/wraith <<EOF\n",
-                               "/var/log/wraith.log {\n",
-                               "  rotate 5 \n",
-                               "  weekly \n",
-                               "  compress\n",
-                               "  missingok\n",
-                               "  notifempty\n",
-                               "}\n",
-                               "EOF\n",
-                               "cat > /etc/systemd/system/wraith.service <<EOF\n",
-                               "[Unit]\n",
-                               "After=network.service\n",
-                               "\n",
-                               "[Service]\n",
-                               "ExecStart=/root/nmap-runner.sh\n",
-                               "\n",
-                               "[Install]\n",
-                               "WantedBy=default.target\n",
-                               "EOF\n",
-                               "chmod u+x /root/nmap-runner.sh\n",
-                               "chmod 664 /etc/systemd/system/wraith.service\n",
-                               "systemctl daemon-reload\n",
-                               "systemctl enable wraith.service\n",
-                               "systemctl start wraith.service\n",
                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                "/usr/local/bin/cfn-signal -e $? ",
                                    "  --stack ", { "Ref": "AWS::StackName" },

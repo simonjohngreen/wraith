@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<wraith>
+   <nmap>
+      <description>NMAP Configuration</description>
+      <bucket-prefix>nnap</bucket-prefix>
+      <schedule>0 0 * * SUN</schedule>
+         <report>
+            <report-prefix>tcp</report-prefix>
+            <report-description>NMAP TCP Port Scan</report-description>
+            <report-command></report-command>
+         </report>
+         <report>
+            <report-prefix>udp</report-prefix>
+            <report-description>NMAP UDP Port Scan</report-description>
+            <report-command>-sU</report-command>
+         </report>
+         <report>
+            <report-prefix>nse-scripts</report-prefix>
+            <report-description>NMAP NSE scripts Scan</report-description>
+            <report-command>-T4 -A -v -sC</report-command>
+         </report>
+   </nmap>
+   <test>
+      <description>test Configuration</description>
+      <bucket-prefix>test</bucket-prefix>
+      <schedule>0 1 * * SUN</schedule>
+         <report>
+            <report-prefix>test1</report-prefix>
+            <report-description>Test Scan1</report-description>
+            <report-command></report-command>
+         </report>
+         <report>
+            <report-prefix>test2</report-prefix>
+            <report-description>Test Scan2</report-description>
+            <report-command></report-command>
+         </report>
+         <report>
+            <report-prefix>test3</report-prefix>
+            <report-description>Test Scan3</report-description>
+            <report-command></report-command>
+         </report>
+   </test>
+</wraith>
+

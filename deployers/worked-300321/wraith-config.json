@@ -1,0 +1,48 @@
+{
+  "wraith": {
+    "nmap": {
+      "description": "NMAP Configuration",
+      "bucket-prefix": "nnap",
+      "schedule": "0 0 * * SUN",
+      "report": [
+        {
+          "prefix": "tcp",
+          "description": "NMAP TCP Port Scan",
+          "command": "-v" 
+        },
+        {
+          "prefix": "udp",
+          "description": "NMAP UDP Port Scan",
+          "command": "-sU -v"
+        },
+        {
+          "prefix": "nse-scripts",
+          "description": "NMAP NSE scripts Scan",
+          "command": "-T4 -A -v -sC"
+        }
+      ]
+    },
+    "test": {
+      "description": "test Configuration",
+      "bucket-prefix": "test",
+      "schedule": "0 1 * * SUN",
+      "report": [
+        {
+          "report-prefix": "test1",
+          "report-description": "Test Scan1",
+          "report-command": "" 
+        },
+        {
+          "report-prefix": "test2",
+          "report-description": "Test Scan2",
+          "report-command": "" 
+        },
+        {
+          "report-prefix": "test3",
+          "report-description": "Test Scan3",
+          "report-command": "" 
+        }
+      ]
+    }
+  }
+}

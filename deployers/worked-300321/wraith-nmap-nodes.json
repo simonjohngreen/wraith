@@ -88,14 +88,6 @@
         "S3BucketID": {
             "Description": "Reports S3 Bucket ID",
             "Type": "String"
-        },
-        "tempS3bucketURL": {
-         "Type": "String",
-         "Description": "Temp S3 Bucket used to store the cloudformation yamls"
-        },
-        "TempS3bucket": {
-         "Type": "String",
-         "Description": "Temp S3 Bucket name , used to get the wraith config files"
         }
     },
     "Mappings": {
@@ -222,16 +214,12 @@
                                "apt-get update\n",
                                "apt-get remove -y --purge unattended-upgrades\n",
                                "apt-get -y install nmap jq fop\n",
-                               "apt install -y python-pip\n",
-                               "curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
-                               "unzip /tmp/awscli-bundle.zip -d /tmp\n",
-                               "sudo /tmp/awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-config.xml /root\n", 
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-config.json /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-endpoints-ipv4 /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-endpoints-ipv6 /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/nmap-fo.xsl /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/nmap-runner.sh /root\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/wraith-config.xml -o wraith-config.xml\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/wraith-config.json -o wraith-config.json\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/wraith-endpoints-ipv4 -o wraith-endpoints-ipv4\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/wraith-endpoints-ipv6 -o wraith-endpoints-ipv6\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/nmap-fo.xsl -o nmap-fo.xsl\n",
+                               "curl https://wraithdeployer.s3.amazonaws.com/nmap-runner.sh -o nmap-runner.sh\n",
                                "####### msmtp setup for emailing reports################\n",
                                "sudo apt-get -y install msmtp msmtp-mta ca-certificates\n",
                                "sudo mkdir -p /etc/msmtp\n",
@@ -291,6 +279,10 @@
                                "[Install]\n",
                                "WantedBy=default.target\n",
                                "EOF\n",
+                               "apt install -y python-pip\n",
+                               "curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
+                               "unzip /tmp/awscli-bundle.zip -d /tmp\n", 
+                               "sudo /tmp/awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws\n", 
                                "chmod u+x /root/nmap-runner.sh\n",
                                "chmod 664 /etc/systemd/system/wraith.service\n",
                                "systemctl daemon-reload\n",

@@ -56,7 +56,7 @@
                 "EnableDnsSupport": "True",
                 "Tags": [{
                     "Key": "Name",
-                    "Value": { "Fn::Join": [".", ["Wraith", { "Ref": "SiteName" }]] }
+                    "Value": { "Fn::Join": [".", ["Contrail", { "Ref": "SiteName" }]] }
                 }]
             }
         },
@@ -70,7 +70,7 @@
                 },
                 "Tags": [{
                     "Key": "Name",
-                    "Value": { "Fn::Join": [".", ["WraithPublicSN1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
+                    "Value": { "Fn::Join": [".", ["ContrailPublicSN1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
                 }]
             }
         },
@@ -79,7 +79,7 @@
             "Properties": {
                 "Tags": [{
                     "Key": "Name",
-                    "Value": { "Fn::Join": [".", ["WraithInternetGW1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
+                    "Value": { "Fn::Join": [".", ["ContrailInternetGW1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
                 }]
             }
         },
@@ -113,7 +113,7 @@
                 },
                 "Tags": [{
                     "Key": "Name",
-                    "Value": { "Fn::Join": [".", ["WraithNATGW1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
+                    "Value": { "Fn::Join": [".", ["ContrailNATGW1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
                 }]
             }
         },
@@ -123,7 +123,7 @@
                 "VpcId": { "Ref": "VPC1" },
                 "Tags": [{
                     "Key": "Name",
-                    "Value": { "Fn::Join": [".", ["WraithPubicSubnetRouteTable1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
+                    "Value": { "Fn::Join": [".", ["ContrailPubicSubnetRouteTable1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] }
                 }]
             }
         },

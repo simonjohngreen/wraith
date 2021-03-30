@@ -123,11 +123,7 @@
         },
         "tempS3bucketURL": {
          "Type": "String",
-         "Description": "Temp S3 Bucket URL used to call the cloudformation yamls"
-        },
-        "TempS3bucket": {
-         "Type": "String",
-         "Description": "Temp S3 Bucket name , used to get the wraith config files"
+         "Description": "Temp S3 Bucket used to store the cloudformation yamls"
         }
     },
     "Conditions": {
@@ -237,12 +233,6 @@
                     },
                     "ExternaldnsZoneID": {
                         "Ref": "ExternaldnsZoneID"
-                    },
-                    "tempS3bucketURL": {
-                        "Ref": "tempS3bucketURL"
-                    },
-                    "TempS3bucket": {
-                        "Ref": "TempS3bucket"
                     },
                     "S3BucketID": {
                         "Fn::GetAtt": [ "S3Stack", "Outputs.S3BucketID" ] 
