@@ -1,0 +1,162 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Lamdba stack to schedule wraith auto scaling groups.\n",
+    "Parameters": {
+        "LambdaRate": {
+            "Description": "The rate (frequency) that determines when CloudWatch Events runs the rule that triggers the Lambda function.\n",
+            "Default": "rate(1 minute)",
+            "AllowedValues": [
+                "rate(1 minute)",
+                "rate(10 minutes)",
+                "rate(60 minutes)"
+            ],
+            "Type": "String"
+        },
+        "AutoScalingID": {
+            "Description": "AutoScaling Group ID",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                           "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                ],
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "S3Access",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "autoscaling:*"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Sub": "arn:${AWS::Partition}:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "PolicyName": "LogsAccess",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*Helper*"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "LambdaSchedule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Description": "Wraith scheduling Lambda function..\n",
+                "ScheduleExpression": {
+                    "Ref": "LambdaRate"
+                },
+                "State": "ENABLED",
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::Sub": "${LambdaFunction.Arn}"
+                        },
+                        "Id": "LambdaSchedule",
+                        "Input": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "{\"aws_region\":\"", { "Ref" : "AWS::Region" }, "\",",
+                                    "\"asg_name\":\"",{ "Ref": "AutoScalingID" }, "\",",
+                                    "\"min\":\"1\",",
+                                    "\"desired\":\"1\",",
+                                    "\"max\":\"1\"}"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "LambdaSchedulePermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::Sub": "${LambdaFunction.Arn}"
+                },
+                "Principal": "events.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Sub": "${LambdaSchedule.Arn}"
+                }
+            }
+        },
+        "LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Description": "Lambda function to schedule wraith autoscaling groups\n",
+                "Code": {
+                      "ZipFile": {
+                          "Fn::Join": [
+                              "\n",
+                              [
+                                  "import boto3",
+                                  "import os",
+                                  "# Boto Connection",
+                                  "asg = boto3.client('autoscaling')",
+                                  "def lambda_handler(event, context):",
+                                  "  print(event)",
+                                  "  response = asg.update_auto_scaling_group(AutoScalingGroupName=event['asg_name'],MinSize=int(event['min']),DesiredCapacity=int(event['desired']),MaxSize=int(event['max']))",
+                                  "  print('Wraith Lamdba Scheduler Completed!')",
+                                  "  return 'Wraith Lamdba Scheduler Completed!'"
+                              ]
+                          ]
+                      }
+                },
+                "Handler": "index.lambda_handler",
+                "MemorySize": 128,
+                "Role": {
+                    "Fn::Sub": "${LambdaExecutionRole.Arn}"
+                },
+                "Runtime": "python3.6"
+            }
+        }
+    }
+}
