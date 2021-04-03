@@ -66,7 +66,7 @@
             "Type": "String",
             "Default": "1.18.9"
         },
-        "NMAPNumberOfNodes": {
+        "NumberOfNodes": {
             "Description": "Number of instances to deploy in the auto scaling group",
             "Type": "String",
             "Default": "1"
@@ -128,16 +128,6 @@
         "TempS3bucket": {
          "Type": "String",
          "Description": "Temp S3 Bucket name , used to get the wraith config files"
-        },
-        "NMAPLambdaScheduleStartExpression": {
-            "Description": "NMAP CloudWatch Start Events (in UTC not GMT as shown in the console) for example cron(50 17 * * ? *) will scale up the ASG to NumberOfNodes\n",
-            "Default": "cron(55 17 * * ? *)",
-            "Type": "String"
-        },
-        "NMAPLambdaScheduleStopExpression": {
-            "Description": "NMAP CloudWatch Stop Event for example cron(50 18 * * ? *) will scale down the ASG to 0 nodes\n",
-            "Default": "cron(55 18 * * ? *)",
-            "Type": "String"
         }
     },
     "Conditions": {
@@ -216,7 +206,7 @@
                         "Ref": "NMAPVersion"
                     },
                     "NumberOfNodes": {
-                        "Ref": "NMAPNumberOfNodes"
+                        "Ref": "NumberOfNodes"
                     },
                     "EmailServerURL": {
                         "Ref": "EmailServerURL"
@@ -257,26 +247,6 @@
                     "S3BucketID": {
                         "Fn::GetAtt": [ "S3Stack", "Outputs.S3BucketID" ] 
                     },
-                }
-            }
-        },
-        "NMAPLamdbaStack": {
-            "Type": "AWS::CloudFormation::Stack",
-            "Properties": {
-                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-lamdba.json" ]] },
-                 "Parameters": {
-                    "LambdaScheduleStartExpression": {
-                        "Ref": "NMAPLambdaScheduleStartExpression"
-                    },
-                    "LambdaScheduleStopExpression": {
-                        "Ref": "NMAPLambdaScheduleStopExpression"
-                    },
-                    "AutoScalingID": {
-                        "Fn::GetAtt": [ "NMAPNodesStack", "Outputs.AutoScalingID" ]
-                    },
-                    "NumberOfNodes": {
-                        "Ref": "NMAPNumberOfNodes"
-                    }
                 }
             }
         }

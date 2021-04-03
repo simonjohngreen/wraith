@@ -2,20 +2,25 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "Lamdba stack to schedule wraith auto scaling groups.\n",
     "Parameters": {
-        "LambdaRate": {
-            "Description": "The rate (frequency) that determines when CloudWatch Events runs the rule that triggers the Lambda function.\n",
-            "Default": "rate(1 minute)",
-            "AllowedValues": [
-                "rate(1 minute)",
-                "rate(10 minutes)",
-                "rate(60 minutes)"
-            ],
+        "LambdaScheduleStartExpression": {
+            "Description": "CloudWatch Start Events (in UTC not GMT as shown in the console) for example cron(50 17 * * ? *) will scale up the ASG to NumberOfNodes\n",
+            "Default": "cron(55 17 * * ? *)",
+            "Type": "String"
+        },
+        "LambdaScheduleStopExpression": {
+            "Description": "CloudWatch Stop Event for example cron(50 18 * * ? *) will scale down the ASG to 0 nodes\n",
+            "Default": "cron(55 18 * * ? *)",
             "Type": "String"
         },
         "AutoScalingID": {
             "Description": "AutoScaling Group ID",
             "Type": "String"
-        }
+        },
+        "NumberOfNodes": {
+            "Description": "Number of instances to deploy in the auto scaling group",
+            "Type": "String",
+            "Default": "1"
+         }
     },
     "Resources": {
         "LambdaExecutionRole": {
@@ -85,12 +90,12 @@
                 ]
             }
         },
-        "LambdaSchedule": {
+        "LambdaScheduleStart": {
             "Type": "AWS::Events::Rule",
             "Properties": {
-                "Description": "Wraith scheduling Lambda function..\n",
+                "Description": "Wraith Lambda Start instance function..\n",
                 "ScheduleExpression": {
-                    "Ref": "LambdaRate"
+                    "Ref": "LambdaScheduleStartExpression"
                 },
                 "State": "ENABLED",
                 "Targets": [
@@ -98,16 +103,16 @@
                         "Arn": {
                             "Fn::Sub": "${LambdaFunction.Arn}"
                         },
-                        "Id": "LambdaSchedule",
+                        "Id": "LambdaScheduleStart",
                         "Input": {
                             "Fn::Join": [
                                 "",
                                 [
                                     "{\"aws_region\":\"", { "Ref" : "AWS::Region" }, "\",",
                                     "\"asg_name\":\"",{ "Ref": "AutoScalingID" }, "\",",
-                                    "\"min\":\"1\",",
-                                    "\"desired\":\"1\",",
-                                    "\"max\":\"1\"}"
+                                    "\"min\":\"",{ "Ref": "NumberOfNodes" }, "\",",
+                                    "\"desired\":\"",{ "Ref": "NumberOfNodes" }, "\",",
+                                    "\"max\":\"",{ "Ref": "NumberOfNodes" }, "\"}"
                                 ]
                             ]
                         }
@@ -115,7 +120,7 @@
                 ]
             }
         },
-        "LambdaSchedulePermission": {
+        "LambdaScheduleStartPermission": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
                 "Action": "lambda:InvokeFunction",
@@ -124,10 +129,55 @@
                 },
                 "Principal": "events.amazonaws.com",
                 "SourceArn": {
-                    "Fn::Sub": "${LambdaSchedule.Arn}"
+                    "Fn::Sub": "${LambdaScheduleStart.Arn}"
                 }
             }
         },
+        "LambdaScheduleStop": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+                "Description": "Wraith Lambda Stop instance function..\n",
+                "ScheduleExpression": {
+                    "Ref": "LambdaScheduleStopExpression"
+                },
+                "State": "ENABLED",
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::Sub": "${LambdaFunction.Arn}"
+                        },
+                        "Id": "LambdaScheduleStop",
+                        "Input": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "{\"aws_region\":\"", { "Ref" : "AWS::Region" }, "\",",
+                                    "\"asg_name\":\"",{ "Ref": "AutoScalingID" }, "\",",
+                                    "\"min\":\"0\",",
+                                    "\"desired\":\"0\",",
+                                    "\"max\":\"0\"}"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "LambdaScheduleStopPermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::Sub": "${LambdaFunction.Arn}"
+                },
+                "Principal": "events.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Sub": "${LambdaScheduleStop.Arn}"
+                }
+            }
+        },
+
+
         "LambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {

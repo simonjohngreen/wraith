@@ -157,15 +157,8 @@
                         "ToPort": "-1",
                         "CidrIp": "0.0.0.0/0",
                         "Description": "allow all outbound traffic"
-		            },
-                    {
-                        "IpProtocol": "-1",
-                        "FromPort": "-1",
-                        "ToPort": "-1",
-                        "CidrIpv6": "::/0", 
-                        "Description": "allow all IPV6 outbound traffic"
-		            }
-		        ],
+		    }
+		],
                 "Tags": [
                     {
                         "Key": "Name",
@@ -408,10 +401,6 @@
         "Note1": {
             "Description": "NA",
             "Value": "All done, Go Destroy (but don't forget to tell AWS)" 
-        },
-        "AutoScalingID": {
-            "Description": "Autoscaling Group ID for the Lamda scaler",
-            "Value": {"Ref": "wraithNodeAutoScalingGroup"}
         }
     }
 }

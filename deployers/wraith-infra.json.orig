@@ -75,7 +75,6 @@
         },
         "VPC1V6Cidr": {
             "Type": "AWS::EC2::VPCCidrBlock",
-            "DependsOn": "VPC1",
             "Properties": {
                 "AmazonProvidedIpv6CidrBlock": true,
                 "VpcId": {
@@ -85,7 +84,6 @@
         },
         "PublicSubnet1": {
             "Type": "AWS::EC2::Subnet",
-            "DependsOn": "VPC1V6Cidr",
             "Properties": {
                 "AvailabilityZone": {
                     "Ref": "AvailabilityZone1"
@@ -96,6 +94,31 @@
                 "CidrBlock": {
                     "Ref": "PublicSubnetCIDR1"
                 },
+                "AssignIpv6AddressOnCreation": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    "WraithPublicSN1",
+                                    {
+                                        "Ref": "SiteName"
+                                    },
+                                    {
+                                        "Ref": "AvailabilityZone1"
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "PublicIPv6Cidr": {
+            "Type": "AWS::EC2::SubnetCidrBlock",
+            "Properties": {
                 "Ipv6CidrBlock": {
                     "Fn::Sub": [
                         "${VpcPart}${SubnetPart}",
@@ -125,26 +148,9 @@
                         }
                     ]
                 },
-                "AssignIpv6AddressOnCreation": true,
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                ".",
-                                [
-                                    "WraithPublicSN1",
-                                    {
-                                        "Ref": "SiteName"
-                                    },
-                                    {
-                                        "Ref": "AvailabilityZone1"
-                                    }
-                                ]
-                            ]
-                        }
-                    }
-                ]
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                }
             }
         },
         "InternetGateway": {
