@@ -94,7 +94,7 @@
                 ]
             }
         },
-        "LambdaFunction": {
+        "LambdaS3Copy": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Description": "Lambda function to copy the config from the temp s3 bucket to the perminent bucket\n",
@@ -103,54 +103,53 @@
                           "Fn::Join": [
                               "",
                               [
-                                  "import boto3\n",
-                                  "import json\n",
-                                  "s3 = boto3.resource('s3')\n",
-                                  "clientname=boto3.client('s3')\n",
-                                  "def lambda_handler(event, context):\n",
-                                  "    bucket = '",{ "Ref" : "TempS3bucket" }, "'\n",
-                                  "    try:\n",
-                                  "        response = clientname.list_objects(\n",
-                                  "            Bucket=bucket,\n",
-                                  "            MaxKeys=200\n",
-                                  "        )\n",
-                                  "        for record in response['Contents']:\n",
-                                  "            key = record['Key']\n",
-                                  "            copy_source = {\n",
-                                  "                'Bucket': bucket,\n",
-                                  "                'Key': key\n",
-                                  "            }\n",
-                                  "            try:\n",
-                                  "                destbucket = s3.Bucket('",{ "Ref" : "S3BucketID" }, "')\n",
-                                  "                destbucket.copy(copy_source, key)\n",
-                                  "                print('{} transferred to destination bucket'.format(key))\n",
-                                  "            except Exception as e:\n",
-                                  "                print(e)\n",
-                                  "                print('Error getting object {} from bucket {}. '.format(key, bucket))\n",
-                                  "                raise e\n",
-                                  "    except Exception as e:\n",
-                                  "        print(e)\n",
-                                  "        raise e\n",
+                                "import logging\n",
+                                "import cfnresponse\n",
+                                "import boto3\n",
+                                "s3 = boto3.resource('s3')\n",
+                                "clientname=boto3.client('s3')\n",
+                                "def handler(event, context):\n",
+                                "    bucket = '",{ "Ref" : "TempS3bucket" }, "'\n",
+                                "    try:\n",
+                                "        response = clientname.list_objects(Bucket=bucket,MaxKeys=200)\n",
+                                "        for record in response['Contents']:\n",
+                                "            key = record['Key']\n",
+                                "            copy_source = {'Bucket': bucket,'Key': key}\n",
+                                "            try:\n",
+                                "                destbucket = s3.Bucket('",{ "Ref" : "S3BucketID" }, "')\n",
+                                "                destbucket.copy(copy_source, key)\n",
+                                "                print('{} transferred to destination bucket'.format(key))\n",
+                                "            except Exception as e:\n",
+                                "                print(e)\n",
+                                "                print('Error getting object {} from bucket {}. '.format(key, bucket))\n",
+                                "                raise e\n",
+                                "                cfnresponse.send(event, context, cfnresponse.FAILED, {})\n",
+                                "        cfnresponse.send(event, context, cfnresponse.SUCCESS, {})\n",
+                                "    except Exception as e:\n",
+                                "        print(e)\n",
+                                "        raise e\n",
+                                "        cfnresponse.send(event, context, cfnresponse.FAILED, {})\n"
                               ]
                           ]
                       }
                 },
-                "Handler": "index.lambda_handler",
+                "Handler": "index.handler",
                 "MemorySize": 128,
                 "Timeout" : 90,
                 "Role": {
                     "Fn::Sub": "${LambdaExecutionRole.Arn}"
                 },
-                "Runtime": "python3.6"
+                "Runtime": "python3.7"
             }
         },
-        "InvokeLambda" : {
-            "Type": "Custom::InvokeLambda",
-            "DependsOn": ["LambdaFunction"],
-            "Version" : "1.0",
-            "Properties" : {
+        "CustomResource": {
+            "Type": "Custom::Function",
+            "Properties": {
                 "ServiceToken": {
-                    "Fn::GetAtt": ["LambdaFunction","Arn"]
+                    "Fn::GetAtt": [
+                        "LambdaS3Copy",
+                        "Arn"
+                    ]
                 }
             }
         }

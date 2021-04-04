@@ -1,0 +1,121 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "S3BucketID": {
+            "Description": "Reports S3 Bucket ID",
+            "Type": "String"
+        },
+        "TempS3bucket": {
+         "Type": "String",
+         "Description": "Temp S3 Bucket name , used to get the wraith config files"
+        }
+    },
+    "Resources": {
+        "Logs": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "LogGroupName": "/aws/lambda/custom-resource",
+                "RetentionInDays": 30
+            }
+        },
+        "ExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "custom-resource-execution-role",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogStream",
+                                        "logs:DescribeLogGroup",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": {
+                                        "Fn::GetAtt": [
+                                            "Logs",
+                                            "Arn"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "Function": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "# https://operatingops.com/2018/10/13/cloudformation-custom-resources-avoiding-the-two-hour-exception-timeout/\n",
+                                "import logging\n",
+                                "import cfnresponse\n",
+                                " \n",
+                                "def handler(event, context):\n",
+                                "    logger = logging.getLogger()\n",
+                                "    logger.setLevel(logging.INFO)\n",
+                                "    try:\n",
+                                "        if event['RequestType'] == 'Delete':\n",
+                                "            logger.info('Deleted!')\n",
+                                "            cfnresponse.send(event, context, cfnresponse.SUCCESS, {})\n",
+                                "            return\n",
+                                "\n",
+                                "        logger.info('It worked!')\n",
+                                "        cfnresponse.send(event, context, cfnresponse.SUCCESS, {})\n",
+                                "    except Exception:\n",
+                                "        logger.exception('Signaling failure to CloudFormation.')\n",
+                                "        cfnresponse.send(event, context, cfnresponse.FAILED, {})\n"
+                            ]
+                        ]
+                    }
+                },
+                "FunctionName": "custom-resource",
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "ExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.7",
+                "Timeout": 30
+            }
+        },
+        "CustomResource": {
+            "Type": "Custom::Function",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": [
+                        "Function",
+                        "Arn"
+                    ]
+                }
+            }
+        }
+    }
+}
