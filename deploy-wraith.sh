@@ -5,18 +5,20 @@ TempS3bucket="tmp-wraith-"${UUID}
 tempS3bucketURL="https://$TempS3bucket.s3-eu-west-3.amazonaws.com"
 aws s3 mb s3://${TempS3bucket}
 echo "${YELLOW}Uploading files to s3${RESTORE} "
-aws s3 sync --quiet deployers s3://${TempS3bucket}
+aws s3 sync deployers s3://${TempS3bucket}/config/ --acl public-read
 echo "creating cloudformation stack"
 aws cloudformation create-stack \
   --capabilities CAPABILITY_IAM \
   --stack-name Wraith \
   --disable-rollback \
-  --template-url $tempS3bucketURL/wraith-root.json \
+  --template-url $tempS3bucketURL/config/wraith-root.json \
   --parameters \
 ParameterKey=KeyName,ParameterValue="wraithkey" \
 ParameterKey=VPCCIDR1,ParameterValue="100.72.100.0/22" \
 ParameterKey=SiteName,ParameterValue="wraith" \
-ParameterKey=NumberOfNodes,ParameterValue="1" \
+ParameterKey=NMAPNumberOfNodes,ParameterValue="1" \
+ParameterKey=NMAPLambdaScheduleStartExpression,ParameterValue="cron(30 20 * * ? *)" \
+ParameterKey=NMAPLambdaScheduleStopExpression,ParameterValue="cron(30 21 * * ? *)" \
 ParameterKey=tempS3bucketURL,ParameterValue="$tempS3bucketURL" \
 ParameterKey=TempS3bucket,ParameterValue="$TempS3bucket" \
 ParameterKey=EmailServerURL,ParameterValue="smtp.gmail.com" \
@@ -29,7 +31,7 @@ while [[ $(aws cloudformation describe-stacks --stack-name Wraith --query "Stack
 do
      RESULT=$(aws cloudformation describe-stacks --stack-name Wraith --query "Stacks[].StackStatus" --output text)
      echo "$RESULT waiting for cloudformation stack to complete."
-     sleep 20
+     sleep 60
 done
 if [ -n ${TempS3bucket} ];
 then
