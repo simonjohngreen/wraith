@@ -22,9 +22,9 @@ Configuring Wraith before you deploy it:
 
 	File: deploy-wraith.sh 
 
-	Configure are the four email parameters, add your own email snmp service details (see below for examples)
+	You just need to Configure the four email smtp parameters, add your own email snmp service details (see below for email server configuration examples)
 
-	If you don't add these, tests will still run, s3 will still get the reports. But you will not receive any emails.
+	If you don't update these email parameters the tests will still run, s3 will still get the reports. But you will not receive any emails.
 
 	All other parameters have sensible defaults to get you started.
 
