@@ -67,7 +67,7 @@
             "Default": "1.18.9"
         },
         "NMAPNumberOfNodes": {
-            "Description": "Number of instances to deploy in the auto scaling group",
+            "Description": "Number of instances to deploy in the auto scaling group, either on schedule if a schedule is set, or initialy if no schedule is set",
             "Type": "String",
             "Default": "1"
          },
@@ -130,7 +130,7 @@
          "Description": "Temp S3 Bucket name , used to get the wraith config files"
         },
         "NMAPLambdaScheduleStartExpression": {
-            "Description": "NMAP CloudWatch Start Events (in UTC not GMT as shown in the console) for example cron(50 17 * * ? *) will scale up the ASG to NumberOfNodes\n",
+            "Description": "NMAP CloudWatch Start Events (in UTC not GMT as shown in the console) for example cron(50 17 * * ? *) will scale up the ASG to NumberOfNodes. set to null to disable scheduing and scale up on launch\n",
             "Default": "cron(55 17 * * ? *)",
             "Type": "String"
         },
@@ -141,7 +141,8 @@
         }
     },
     "Conditions": {
-        "DeployNMAPInstances": { "Fn::Equals": [{ "Ref": "SwitchNMAPOnOff" }, "true"] }
+        "DeployNMAPInstances": { "Fn::Equals": [{ "Ref": "SwitchNMAPOnOff" }, "true"] },
+        "ScheduleSet": {"Fn::Not": [{"Fn::Equals" : [{"Ref" : "NMAPLambdaScheduleStartExpression"}, "null"]}]}
     },
     "Resources": {
         "InfraStack": {
@@ -190,7 +191,7 @@
         "NMAPNodesStack": {
             "Type": "AWS::CloudFormation::Stack",
             "Condition": "DeployNMAPInstances",
-            "DependsOn": "S3Stack",
+            "DependsOn": ["S3Stack", "NMAPLamdbaS3CopyStack"],
             "Properties": {
                  "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-nmap-nodes.json" ]] },
                  "Parameters": {
@@ -216,7 +217,11 @@
                         "Ref": "NMAPVersion"
                     },
                     "NumberOfNodes": {
-                        "Ref": "NMAPNumberOfNodes"
+                        "Fn::If" : [
+                            "ScheduleSet",
+                            "0",
+                            {"Ref": "NMAPNumberOfNodes"}
+                        ]
                     },
                     "EmailServerURL": {
                         "Ref": "EmailServerURL"
@@ -256,14 +261,15 @@
                     },
                     "S3BucketID": {
                         "Fn::GetAtt": [ "S3Stack", "Outputs.S3BucketID" ] 
-                    },
+                    }
                 }
             }
         },
-        "NMAPLamdbaStack": {
+        "NMAPLamdbaSchedulerStack": {
             "Type": "AWS::CloudFormation::Stack",
+            "Condition": "ScheduleSet",
             "Properties": {
-                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-lamdba.json" ]] },
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-lamdba-scheduler.json" ]] },
                  "Parameters": {
                     "LambdaScheduleStartExpression": {
                         "Ref": "NMAPLambdaScheduleStartExpression"
@@ -278,6 +284,21 @@
                         "Ref": "NMAPNumberOfNodes"
                     }
                 }
+            }
+        },
+        "NMAPLamdbaS3CopyStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "DependsOn": ["S3Stack"],
+            "Properties": {
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-lamdba-s3-copy.json" ]] },
+                 "Parameters": {
+                    "TempS3bucket": {
+                        "Ref": "TempS3bucket"
+                    },
+                    "S3BucketID": {
+                        "Fn::GetAtt": [ "S3Stack", "Outputs.S3BucketID" ] 
+                    }
+                 }
             }
         }
     },

@@ -144,6 +144,13 @@
                ]
             }
         },
+        "WraithNMAPLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "RetentionInDays": 5,
+                "LogGroupName" : "wraith-nmap"
+            }
+        },
         "SecurityGroupWraith": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
@@ -233,12 +240,44 @@
                                "curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
                                "unzip /tmp/awscli-bundle.zip -d /tmp\n",
                                "sudo /tmp/awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-config.xml /root\n", 
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-config.json /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-endpoints-ipv4 /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/wraith-endpoints-ipv6 /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/nmap-fo.xsl /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/nmap-runner.sh /root\n",
+                               "curl -o /root/amazon-cloudwatch-agent.deb https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb\n",
+                               "dpkg -i -E /root/amazon-cloudwatch-agent.deb\n",
+                               "cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF\n",
+                               "{\n",
+                               "     \"agent\": {\n",
+                               "         \"metrics_collection_interval\": 60\n",
+                               "     },\n",
+                               "     \"logs\": {\n",
+                               "         \"logs_collected\": {\n",
+                               "             \"files\": {\n",
+                               "                 \"collect_list\": [\n",
+                               "                     {\n",
+                               "                         \"file_path\": \"/var/log/wraith.log\",\n",
+                               "                         \"log_group_name\": \"wraith-nmap\",\n",
+                               "                         \"log_stream_name\": \"{hostname}/syslog\",\n",
+                               "                         \"timestamp_format\" :\"%b %d %H:%M:%S\"\n",
+                               "                     }\n",
+                               "                 ]\n",
+                               "             }\n",
+                               "         }\n",
+                               "     }\n",
+                               "}\n",
+                               "EOF\n", 
+                               "systemctl enable amazon-cloudwatch-agent.service\n",
+                               "service amazon-cloudwatch-agent start\n",
+                               "#if aws s3 ls \"s3://",{ "Ref" : "TempS3bucket" }, "\" 2>&1 | grep -q 'NoSuchBucket'\n",
+                               "#then\n",
+                               "#        echo \"temp s3 bucket not present, so no need to copy over the config, its present already\"\n",
+                               "#else\n",
+                               "#        echo \"First node up, so lets copy the config files from the temp bucket to the wraith bucket\"\n",
+                               "#        aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/ s3://",{ "Ref" : "S3BucketID" }, "/config/ --recursive\n",
+                               "#fi\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/wraith-config.xml /root\n", 
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/wraith-config.json /root\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/wraith-endpoints-ipv4 /root\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/wraith-endpoints-ipv6 /root\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/nmap-fo.xsl /root\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/nmap-runner.sh /root\n",
                                "####### msmtp setup for emailing reports################\n",
                                "sudo apt-get -y install msmtp msmtp-mta ca-certificates\n",
                                "sudo mkdir -p /etc/msmtp\n",
@@ -331,7 +370,7 @@
            },
            "CreationPolicy": {
               "ResourceSignal": {
-                "Count": "1",
+                "Count": {"Ref": "NumberOfNodes"},
                 "Timeout": "PT30M"
               }
            }
@@ -391,6 +430,16 @@
                         "Effect":"Allow",
                         "Action":[
                            "s3:*"
+                        ],
+                        "Resource":"*"
+                     },
+                     {
+                        "Effect":"Allow",
+                        "Action":[
+                           "logs:CreateLogStream",
+                           "logs:DescribeLogStreams",
+                           "logs:PutLogEvents",
+                           "cloudwatch:PutMetricData"
                         ],
                         "Resource":"*"
                      }
