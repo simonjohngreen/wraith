@@ -37,7 +37,7 @@
                 "Path": "/",
                 "Policies": [
                     {
-                        "PolicyName": "AutoScaler",
+                        "PolicyName": "S3Access",
                         "PolicyDocument": {
                             "Version": "2012-10-17",
                             "Statement": [
@@ -51,21 +51,6 @@
                                             "Fn::Sub": "arn:${AWS::Partition}:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*"
                                         }
                                     ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "PolicyName": "S3Access",
-                        "PolicyDocument": {
-                            "Version": "2012-10-17",
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "s3:*"
-                                    ],
-                                    "Resource":"*"
                                 }
                             ]
                         }
@@ -106,38 +91,23 @@
                                   "import boto3\n",
                                   "import json\n",
                                   "s3 = boto3.resource('s3')\n",
-                                  "clientname=boto3.client('s3')\n",
-                                  "def lambda_handler(event, context):\n",
-                                  "    bucket = '",{ "Ref" : "TempS3bucket" }, "'\n",
-                                  "    try:\n",
-                                  "        response = clientname.list_objects(\n",
-                                  "            Bucket=bucket,\n",
-                                  "            MaxKeys=200\n",
-                                  "        )\n",
-                                  "        for record in response['Contents']:\n",
-                                  "            key = record['Key']\n",
-                                  "            copy_source = {\n",
-                                  "                'Bucket': bucket,\n",
-                                  "                'Key': key\n",
-                                  "            }\n",
-                                  "            try:\n",
-                                  "                destbucket = s3.Bucket('",{ "Ref" : "S3BucketID" }, "')\n",
-                                  "                destbucket.copy(copy_source, key)\n",
-                                  "                print('{} transferred to destination bucket'.format(key))\n",
-                                  "            except Exception as e:\n",
-                                  "                print(e)\n",
-                                  "                print('Error getting object {} from bucket {}. '.format(key, bucket))\n",
-                                  "                raise e\n",
-                                  "    except Exception as e:\n",
-                                  "        print(e)\n",
-                                  "        raise e\n",
+                                  "def lambda_handler (event, context):\n",
+                                  " bucket = s3.Bucket('",{ "Ref" : "TempS3bucket" }, "')\n",
+                                  " dest_bucket=s3.Bucket('",{ "Ref" : "S3BucketID" }, "')\n",
+                                  " print(bucket)\n",
+                                  " print(dest_bucket)\n",
+                                  "for obj in bucket.objects.filter(Prefix='Input/daily/acctno_pin_xref/ABC_ACCTNO_PIN_XREF',Delimiter='/'):\n",
+                                  "  dest_key=obj.key\n",
+                                  "  print(dest_key)\n",
+                                  "  s3.Object(dest_bucket.name, dest_key).copy_from(CopySource= {'Bucket': obj.bucket_name, 'Key': obj.key})\n", 
+                                  "print('Wraith Lamdba S3 Copy Completed!')\n",
+                                  "return 'Wraith Lamdba S3 Copy Completed!'\n"
                               ]
                           ]
                       }
                 },
                 "Handler": "index.lambda_handler",
                 "MemorySize": 128,
-                "Timeout" : 90,
                 "Role": {
                     "Fn::Sub": "${LambdaExecutionRole.Arn}"
                 },
@@ -146,7 +116,6 @@
         },
         "InvokeLambda" : {
             "Type": "Custom::InvokeLambda",
-            "DependsOn": ["LambdaFunction"],
             "Version" : "1.0",
             "Properties" : {
                 "ServiceToken": {

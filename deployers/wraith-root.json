@@ -148,7 +148,7 @@
         "InfraStack": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-infra.json" ]] },
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "/config/wraith-infra.json" ]] },
                  "Parameters": {
                     "AvailabilityZone1": {
                         "Ref": "AvailabilityZone1"
@@ -177,7 +177,7 @@
         "S3Stack": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-s3.json" ]] },
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "/config/wraith-s3.json" ]] },
                  "Parameters": {
                     "S3BucketRetentionParam": {
                         "Ref": "S3BucketRetentionParam"
@@ -193,7 +193,7 @@
             "Condition": "DeployNMAPInstances",
             "DependsOn": ["S3Stack", "NMAPLamdbaS3CopyStack"],
             "Properties": {
-                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-nmap-nodes.json" ]] },
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "/config/wraith-nmap-nodes.json" ]] },
                  "Parameters": {
                     "AvailabilityZone1": {
                         "Ref": "AvailabilityZone1"
@@ -269,7 +269,7 @@
             "Type": "AWS::CloudFormation::Stack",
             "Condition": "ScheduleSet",
             "Properties": {
-                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-lamdba-scheduler.json" ]] },
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "/config/wraith-lamdba-scheduler.json" ]] },
                  "Parameters": {
                     "LambdaScheduleStartExpression": {
                         "Ref": "NMAPLambdaScheduleStartExpression"
@@ -290,7 +290,7 @@
             "Type": "AWS::CloudFormation::Stack",
             "DependsOn": ["S3Stack"],
             "Properties": {
-                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "wraith-lamdba-s3-copy.json" ]] },
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "/config/wraith-lamdba-s3-copy.json" ]] },
                  "Parameters": {
                     "TempS3bucket": {
                         "Ref": "TempS3bucket"
