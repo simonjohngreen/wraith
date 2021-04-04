@@ -1,9 +1,5 @@
 # wraith
 
-An automated, scalable, end-point port-scanner, written in AWS CloudFormation
-
-Comming Soon: Rest API Capacity Tesiting. Internet facing endpoint Penetrartion Testing
-
 
 What Does wraith do:
 
