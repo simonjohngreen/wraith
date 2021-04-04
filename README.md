@@ -11,11 +11,11 @@ What Does wraith do:
 
 	Wraith then generates reports in xml and pfd, and emails the pdf's to you boss.
 
-	Wraith is automated. You run one script to deploy the whole solution using AWS Cloudformation. 
+	Wraith is automated and clean. You run one small script to deploy the whole solution using AWS Cloudformation nested stacks (its all in the cloudformation)
 
 	Wraith is configurable. you can turn features on and off. You can ask for 100 nodes or 1 node of NMAP scanners to run at 2am every Tuesday. To scan all of your public endpoints IPV4 and IPV6. 
 
-	In between test runs, the autoscaling groups are scaled back to 0 based on a cron, saving $$s on your bill. 
+	In between test runs, the autoscaling groups are scaled back to 0 based on a Lamdba cron function, saving $$s on your bill. 
 
 	So far the NMAP scans are ready to go. Other features will be added soon. 
 	
@@ -47,7 +47,7 @@ Deleting Wraith: (takes < 5 minutes)
 
 	./delete-wraith.sh
 
-Where are the reports kept?
+Besides Emails, where are the reports kept?
 
 	When you ran the ./deploy-wrait.sh the output was an s3 bucket. In this wraith-s3stack-*-s3reportbucket-* bucket all past xml and pdf reports are stored. The retention is configurable (5 days is the default)
 
@@ -61,7 +61,7 @@ Debugging Wraith nodes with ssh:
 	./debug-node-ssh-on.sh  (opens up ssh access to the node you select)
 	./debug-node-ssh-off.sh (disables ssh access to the node you select)
 
-Where are the logs:
+Besides emails, where are the logs:
 
 	Cloudwatch log groups: wraith-nmap						Logs when generating NMAP Scans and emails
 	Cloudwatch log groups: /aws/lambda/Wraith-NMAPLamdbaS3CopyStack*	The output from the bucket copy
