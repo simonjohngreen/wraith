@@ -5,7 +5,7 @@ What Does wraith do:
 
 	Wraith looks to automate those periodic port scans, penetration tests and API capacity, API performance tests and functional API tests, that we are all asked to run from time to time. 
 
-	Wraith then generates reports in xml and pfd, and emails the pdf's to you boss.
+	Wraith then generates reports in xml and pdf, and emails the pdf's to you boss.
 
 	Wraith is automated and clean. You run one small script to deploy the whole solution using AWS Cloudformation nested stacks (its all in the cloudformation)
 
