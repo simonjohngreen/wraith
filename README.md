@@ -3,19 +3,21 @@
 
 What Does wraith do:
 
-	Wraith looks to automate those periodic port scans, penetration tests and API capacity, API performance tests and functional API tests, that we are all asked to run from time to time. 
+	Wraith looks to automate those periodic internet based port scans, penetration tests, API capacity and performance tests and functional API tests, that we are all asked to run manualy and generate reports on from time to time. 
 
-	Wraith then generates reports in xml and pdf, and emails the pdf's to you boss.
+	Wraith then generates reports in xml and pdf. Emails the pdf's in an easy to digest format. Stored the pdf and xml reports in S3.
 
-	Wraith is automated and clean. You run one small script to deploy the whole solution using AWS Cloudformation nested stacks (its all in the cloudformation)
+	Wraith is fully automated within a nested cloudformation stack. You run one small script to deploy the whole solution.
 
-	Wraith is configurable. you can turn features on and off. You can ask for 100 nodes or 1 node of NMAP scanners to run at 2am every Tuesday. To scan all of your public endpoints IPV4 and IPV6. 
+	Wraith is configurable. you can modify and turn features on and off as cloudformation parameters. You can ask for 100 nodes or 1 node of NMAP scanners to run at 2am every Tuesday. To scan all of your public endpoints. You can add youyr own tests to the config.json. 
 
-	In between test runs, the autoscaling groups are scaled back to 0 based on a Lamdba cron function, saving $$s on your bill. 
+	Wraith has IPV4 and IPV6 support on the nodes.
+
+	In between test runs, the autoscaling groups are scheduuled to scale back to 0, saving $$s on your bill. 
 
 	So far the NMAP scans are ready to go. Other features will be added soon. 
 	
-	configuration details follow:
+	Configuration details follow:
 	
 
 Configuring Wraith before you deploy it:
@@ -61,7 +63,9 @@ Besides emails, where are the logs:
 
 	Cloudwatch log groups: wraith-nmap						Logs when generating NMAP Scans and emails
 	Cloudwatch log groups: /aws/lambda/Wraith-NMAPLamdbaS3CopyStack*	The output from the bucket copy
+	Cloudwatch log groups: /aws/lambda/Wraith-NMAPLamdbaSchedulerStack*	The output from the scheduler
 	On the nodes: /tmp/node-install.log 	The cloud-init logs from when the node was built
+	
 
 More details on Emailing Reports:
 

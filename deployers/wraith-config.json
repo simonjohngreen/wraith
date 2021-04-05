@@ -6,19 +6,34 @@
       "schedule": "0 0 * * SUN",
       "report": [
         {
-          "prefix": "tcp",
+          "prefix": "tcp-ipv4",
           "description": "NMAP TCP Port Scan",
           "command": "-v" 
         },
         {
-          "prefix": "udp",
+          "prefix": "udp-ipv4",
           "description": "NMAP UDP Port Scan",
           "command": "-sU -v"
         },
         {
-          "prefix": "nse-scripts",
+          "prefix": "nse-scripts-ipv4",
           "description": "NMAP NSE scripts Scan",
           "command": "-T4 -A -v -sC"
+        },
+        {
+          "prefix": "tcp-ipv6",
+          "description": "NMAP IPV6 TCP Port Scan",
+          "command": "-v -6" 
+        },
+        {
+          "prefix": "udp-ipv6",
+          "description": "NMAP IPV6 UDP Port Scan",
+          "command": "-sU -v -6"
+        },
+        {
+          "prefix": "nse-scripts-ipv6",
+          "description": "NMAP IPV6 NSE scripts Scan",
+          "command": "-T4 -A -v -sC -6"
         }
       ]
     },
