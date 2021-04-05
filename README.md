@@ -1,8 +1,8 @@
-# wraith
+# Wraith
 
 ![Https wraith](https://static.wikia.nocookie.net/stargate/images/a/a3/HiveInfection11.jpg/revision/latest/scale-to-width-down/1000?cb=20200608010055)
 
-## What Does wraith do:
+## What Does Wraith do:
 
 * Wraith automates those periodic internet based port scans, penetration tests, API capacity and performance tests and functional API tests, that we are all asked to run manualy. 
 
