@@ -32,12 +32,16 @@ File: deploy-wraith.sh
 
 ### Telling Wraith what public endpoints to scan:
 
-* File: deployers/wraith-endpoints-ipv4     
-	* Add a list of ipv4 names and/or addresses you want port scanned
-* File: deployers/wraith-endpoints-ipv6     
-	* Add a list of ipv6 names and/or addresses you want port scanned
+File: deployers/wraith-endpoints-ipv4     
+
+* Add a list of ipv4 names and/or addresses you want port scanned
+
+File: deployers/wraith-endpoints-ipv6     
+* Add a list of ipv6 names and/or addresses you want port scanned
+
 File: deployers/wraith-configuration.json 
-	* This file configures the tests to run, the defaults will get you started and can be left as is.
+
+* This file configures the tests to run, the defaults will get you started and can be left as is.
 
 ### Installing wraith: (takes < 15 minutes)
 
@@ -60,7 +64,7 @@ File: deployers/wraith-configuration.json
 ### I don't want to schedule my tests, I just want to run some nodes now. 
 
 * Set parameter NMAPLambdaScheduleStartExpression=null
-	No lambda scheduler will run, instead NMAPNumberOfNodes nodes will be fired up now.
+* No lambda scheduler will run, instead NMAPNumberOfNodes nodes will be fired up now.
 
 ### Debugging Wraith nodes with ssh:
 ```
