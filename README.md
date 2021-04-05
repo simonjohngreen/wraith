@@ -98,14 +98,40 @@ File: deployers/wraith-configuration.json
    	* mail
 	* other
 	* copy the password and use it as the password for your account
+
+Example: 
+```
+ParameterKey=EmailServerURL,ParameterValue="smtp.gmail.com" \
+ParameterKey=EmailUsername,ParameterValue="my.email@gmail.com" \
+ParameterKey=EmailPassword,ParameterValue="yl45fGtfsfwr" \
+ParameterKey=EmailFromAddress,ParameterValue="my.email@gmail.com" \
+ParameterKey=EmailToAddress,ParameterValue="my.email@gmail.com"
+```
 ### ICloud 
 * To use icloud to send the reports again you need create an app password and use that rather than youre account password
 * Info: https://support.apple.com/en-gb/HT204397
 * Portal: https://appleid.apple.com/account/managei
 * In the Security section, click Generate Password below App-Specific Passwords.
+
+Example: 
+```
+ParameterKey=EmailServerURL,ParameterValue="smtp.mail.me.com" \
+ParameterKey=EmailUsername,ParameterValue="my.email@icloud.com" \
+ParameterKey=EmailPassword,ParameterValue="jkfk-dfeefds-345fdf-gbsc" \
+ParameterKey=EmailFromAddress,ParameterValue="my.email@icloud.com" \
+ParameterKey=EmailToAddress,ParameterValue="my.email@icloud.com"
+```
 ### AWS SES
 * AWS SES you just have to specify the mail servers, login and password. SES will then forward the report emails.
 * For SES emails fordwarded to icloud and gmail to be accepted, there is a lot to setup within your AWS account itself, 
 * So that the emails are not seen as junk and dropped. This site gives the gorry details https://www.mailmonitor.com/email-delivery-tips-icloud-users/ 
 
+Example: 
+```
+ParameterKey=EmailServerURL,ParameterValue="email-smtp.eu-central-1.amazonaws.com" \
+ParameterKey=EmailUsername,ParameterValue="AKRGFTHGFG67G7K" \
+ParameterKey=EmailPassword,ParameterValue="BKfkjrdoifv79fdyYTW" \
+ParameterKey=EmailFromAddress,ParameterValue="my.email@mydomain.com \"
+ParameterKey=EmailToAddress,ParameterValue="my.email@mydomain"
+``
 
