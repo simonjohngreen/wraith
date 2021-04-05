@@ -34,9 +34,9 @@ sudo chown root:root /etc/msmtp/wraith0
 sudo chmod 0600 /root/muttrc 
 #get todays list of reports and email them
 TODAYS_REPORTS=$(find reports-pdf/* -daystart -ctime 0 -print | tr '\n' ' ')
-mutt -F /root/muttrc -a $TODAYS_REPORTS -s "Wraith NMAP Report" -- simon.j.green@icloud.com < emailmessage.txt
-aws s3 cp /root/reports-xml/ s3://wraith-s3stack-aauqqa1a42ll-s3reportbucket-265ua72ud3l2/reports-xml/ --recursive
-aws s3 cp /root/reports-pdf/ s3://wraith-s3stack-aauqqa1a42ll-s3reportbucket-265ua72ud3l2/reports-pdf/ --recursive
+mutt -F /root/muttrc -a $TODAYS_REPORTS -s "Wraith NMAP Report" -- [EmailToAddress] < emailmessage.txt
+aws s3 cp /root/reports-xml/ s3://[S3BucketID]/reports-xml/ --recursive
+aws s3 cp /root/reports-pdf/ s3://[S3BucketID]/reports-pdf/ --recursive
 rm /root/reports-xml/*
 rm /root/reports-pdf/*
 echo "All Done"
