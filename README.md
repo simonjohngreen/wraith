@@ -24,7 +24,7 @@
 
 File: deploy-wraith.sh 
 
-* You just need to Configure the four email smtp parameters, add your own email snmp service details (see below for email server configuration examples)
+* You just need to Configure your existing EC2 SSH key name (KeyName) and the four email smtp parameters (see below for email SMTP server configuration examples)
 
 * If you don't update these email parameters the tests will still run, s3 will still get the reports. But you will not receive any emails.
 
