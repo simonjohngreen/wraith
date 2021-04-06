@@ -214,7 +214,7 @@
                                "cd /root\n",
                                "apt-get update\n",
                                "apt-get remove -y --purge unattended-upgrades\n",
-                               "apt-get -y install artillery jq fop zip unzip\n",
+                               "apt-get -y install jq fop zip unzip\n",
                                "apt install -y python-pip\n",
                                "curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
                                "unzip /tmp/awscli-bundle.zip -d /tmp\n",
