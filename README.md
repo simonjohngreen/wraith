@@ -18,7 +18,7 @@
 
 * In between scaning, the autoscaling groups are scheduled to scale back to 0, saving on compute $$s.
 
-## What Services does Wraith currently schedule and generate reports on
+## Which Services does Wraith currently schedule and generate reports on
 
 * (ready) NMAP is an opensource port scanner and vulerability test tool. Testing public addresses for open Ports, OS fingerprints, ssh keys etc.
 * (in progress) Artillery is an opensource smoke and performance tester
