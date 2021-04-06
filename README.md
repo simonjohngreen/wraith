@@ -4,6 +4,8 @@
 
 ## What Does Wraith do:
 
+* Wraith is OpenSource and free to use and deploy within your AWS accounts
+
 * Wraith automates those periodic internet based port scans, penetration tests, API capacity and performance tests and functional API tests, that we are all asked to run manualy. 
 
 * Wraith also generates reports in xml and pdf. Emails the pdf's in an easy to digest format. Then stores the pdf and xml reports in an S3 bucket.
@@ -16,7 +18,11 @@
 
 * In between scaning, the autoscaling groups are scheduled to scale back to 0, saving on compute $$s.
 
-* So far the NMAP scans are ready to go. Other scans and features will be added soon. 
+## What Services does Wraith currently schedule and generate reports on
+
+* (ready) NMAP is an opensource port scanner and vulerability test tool. Testing public addresses for open Ports, OS fingerprints, ssh keys etc.
+* (in progress) Artillery is an opensource smoke and performance tester
+* (being considered) Webpagetest is an opensource web performance tool providing deep diagnostic information about how a page performs under a variety of conditions. 
 	
 ## Configuration details follow:
 	
@@ -134,4 +140,9 @@ ParameterKey=EmailPassword,ParameterValue="BKfkjrdoifv79fdyYTW" \
 ParameterKey=EmailFromAddress,ParameterValue="my.email@mydomain.com \"
 ParameterKey=EmailToAddress,ParameterValue="my.email@mydomain"
 ```
+## Some Example Reports
+
+NMAP:
+
+![Https wraith](https://static.wikia.nocookie.net/stargate/images/a/a3/HiveInfection11.jpg/revision/latest/scale-to-width-down/1000?cb=20200608010055)
 

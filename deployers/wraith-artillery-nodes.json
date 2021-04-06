@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Deploys wraith nmap nodes for port scanning, each node gets its own public ip to allow the attack to be distributed",
+    "Description": "Deploys wraith artillery nodes for rest API performance testing, each node gets its own public ip to allow the attack to be distributed",
     "Parameters": {
         "AvailabilityZone1": {
             "Description": "AWS Availability Zone For the nodes",
@@ -20,7 +20,7 @@
         "SiteName": {
             "Description": "Site Name",
             "Type": "String",
-            "Default": "wraith-nmap"
+            "Default": "wraith-artillery"
         },
         "idVPC": {
             "Description": "Existing VPCid where the nodes will sit",
@@ -30,8 +30,8 @@
             "Description": "Existing Public Subnet 1 id",
             "Type": "String"
         },
-        "NMAPVersion": {
-            "Description": "NMAP version to install, default is 1.18.9",
+        "ARTILLERYVersion": {
+            "Description": "ARTILLERY version to install, default is 1.18.9",
             "Type": "String",
             "Default": "7.91-1"
         },
@@ -78,12 +78,7 @@
         "ExternaldnsDomainFilter": {
             "Description": "domain for the external dns to monitor",
             "Type": "String",
-            "Default": "incubator.dev.int.foobarservices.com"
-        },
-        "ExternaldnsZoneID": {
-            "Description": "if using an existing domain enter the hosted zone ID here",
-            "Type": "String",
-            "Default": "Z09733143J0NHZEXWD6B"
+            "Default": "artillery.wraith.com"
         },
         "S3BucketID": {
             "Description": "Reports S3 Bucket ID",
@@ -128,35 +123,19 @@
         "HasExternaldnsCreateZone": { "Fn::Equals": [{ "Ref": "ExternaldnsCreateZone" }, "true"] }
     },
     "Resources": {
-        "R53ZONE": {
-            "Type": "AWS::Route53::HostedZone",
-            "Condition": "HasExternaldnsCreateZone",
-            "Properties": {
-               "HostedZoneConfig": {
-                  "Comment": { "Ref": "ExternaldnsDomainFilter" } 
-               },
-               "Name": { "Ref": "ExternaldnsDomainFilter" },
-               "VPCs": [
-                  {
-                     "VPCId": { "Ref": "idVPC" }, 
-                     "VPCRegion": { "Ref": "AWS::Region"}
-                  }
-               ]
-            }
-        },
-        "WraithNMAPLogGroup": {
+        "WraithARTILLERYLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
                 "RetentionInDays": 5,
-                "LogGroupName" : "wraith-nmap"
+                "LogGroupName" : "wraith-artillery"
             }
         },
         "SecurityGroupWraith": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "VpcId": { "Ref": "idVPC" },
-                "GroupDescription": "Security group for Wraith NMAP Instances",
-                "GroupName": { "Fn::Join": [".", ["Wraith_NMAP_SG1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] },
+                "GroupDescription": "Security group for Wraith ARTILLERY Instances",
+                "GroupName": { "Fn::Join": [".", ["Wraith_ARTILLERY_SG1", { "Ref": "SiteName" }, { "Ref": "AvailabilityZone1" }]] },
                 "SecurityGroupEgress": [
                     {
                         "IpProtocol": "-1",
@@ -176,7 +155,7 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join" : [ ".", [ "Wraith_NMAP_Security_Group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] }
+                        "Value": { "Fn::Join" : [ ".", [ "Wraith_ARTILLERY_Security_Group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] }
                     }
                 ]
             }
@@ -196,7 +175,7 @@
                 "Description": "loopback rule"
             }
         },
-        "wraithNodeLaunchConfig" : {
+        "wraithArtilleryNodeLaunchConfig" : {
            "Type" : "AWS::AutoScaling::LaunchConfiguration",
            "Properties" : {
               "ImageId": {
@@ -220,7 +199,7 @@
               },
               "IamInstanceProfile": { "Ref": "wraithInstanceProfile" },
               "SecurityGroups"        : [ { "Ref" : "SecurityGroupWraith" } ],
-              "LaunchConfigurationName" : "wraithNodeLaunchConfig",
+              "LaunchConfigurationName" : "wraithArtilleryNodeLaunchConfig",
               "UserData": {
                  "Fn::Base64": {
                    "Fn::Join": [
@@ -229,13 +208,13 @@
                          "#!/bin/bash -x\n",
                          "exec > /tmp/node-install.log 2>&1\n",
                                "#################\n",
-                               "#install Wraith NMAP node\n",
+                               "#install Wraith ARTILLERY node\n",
                                "#################\n",
                                "swapoff -a\n",
                                "cd /root\n",
                                "apt-get update\n",
                                "apt-get remove -y --purge unattended-upgrades\n",
-                               "apt-get -y install nmap jq fop\n",
+                               "apt-get -y install artillery jq fop\n",
                                "apt install -y python-pip\n",
                                "curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o /tmp/awscli-bundle.zip\n",
                                "unzip /tmp/awscli-bundle.zip -d /tmp\n",
@@ -253,7 +232,7 @@
                                "                 \"collect_list\": [\n",
                                "                     {\n",
                                "                         \"file_path\": \"/var/log/wraith.log\",\n",
-                               "                         \"log_group_name\": \"wraith-nmap\",\n",
+                               "                         \"log_group_name\": \"wraith-artillery\",\n",
                                "                         \"log_stream_name\": \"{hostname}/syslog\",\n",
                                "                         \"timestamp_format\" :\"%b %d %H:%M:%S\"\n",
                                "                     }\n",
@@ -265,19 +244,12 @@
                                "EOF\n", 
                                "systemctl enable amazon-cloudwatch-agent.service\n",
                                "service amazon-cloudwatch-agent start\n",
-                               "#if aws s3 ls \"s3://",{ "Ref" : "TempS3bucket" }, "\" 2>&1 | grep -q 'NoSuchBucket'\n",
-                               "#then\n",
-                               "#        echo \"temp s3 bucket not present, so no need to copy over the config, its present already\"\n",
-                               "#else\n",
-                               "#        echo \"First node up, so lets copy the config files from the temp bucket to the wraith bucket\"\n",
-                               "#        aws s3 cp s3://",{ "Ref" : "TempS3bucket" }, "/ s3://",{ "Ref" : "S3BucketID" }, "/config/ --recursive\n",
-                               "#fi\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-config.xml /root\n", 
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-config.json /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-endpoints-ipv4 /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-endpoints-ipv6 /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/nmap-fo.xsl /root\n",
-                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/nmap-runner.sh /root\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/artillery-fo.xsl /root\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/artillery-runner.sh /root\n",
                                "####### msmtp setup for emailing reports################\n",
                                "sudo apt-get -y install msmtp msmtp-mta ca-certificates\n",
                                "sudo mkdir -p /etc/msmtp\n",
@@ -315,8 +287,8 @@
                                "Subject: icloud attachment Test\n",
                                "This message was sent using icloud\n",
                                "EOF\n",
-                               "sed -i -e \"s/\\[EmailToAddress\\]/", { "Ref": "EmailToAddress" }, "/g\" /root/nmap-runner.sh \n",
-                               "sed -i -e \"s/\\[S3BucketID\\]/", { "Ref": "S3BucketID" }, "/g\" /root/nmap-runner.sh \n",
+                               "sed -i -e \"s/\\[EmailToAddress\\]/", { "Ref": "EmailToAddress" }, "/g\" /root/artillery-runner.sh \n",
+                               "sed -i -e \"s/\\[S3BucketID\\]/", { "Ref": "S3BucketID" }, "/g\" /root/artillery-runner.sh \n",
                                "touch /var/log/wraith.log\n",
                                "cat > /etc/logrotate.d/wraith <<EOF\n",
                                "/var/log/wraith.log {\n",
@@ -332,12 +304,12 @@
                                "After=network.service\n",
                                "\n",
                                "[Service]\n",
-                               "ExecStart=/root/nmap-runner.sh\n",
+                               "ExecStart=/root/artillery-runner.sh\n",
                                "\n",
                                "[Install]\n",
                                "WantedBy=default.target\n",
                                "EOF\n",
-                               "chmod u+x /root/nmap-runner.sh\n",
+                               "chmod u+x /root/artillery-runner.sh\n",
                                "chmod 664 /etc/systemd/system/wraith.service\n",
                                "systemctl daemon-reload\n",
                                "systemctl enable wraith.service\n",
@@ -345,7 +317,7 @@
                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                "/usr/local/bin/cfn-signal -e $? ",
                                    "  --stack ", { "Ref": "AWS::StackName" },
-                                   "  --resource wraithNodeAutoScalingGroup " ,
+                                   "  --resource wraithArtilleryNodeAutoScalingGroup " ,
                                    "  --region ", { "Ref" : "AWS::Region" }, "\n"
                        ]
                     ]
@@ -353,17 +325,17 @@
              }
            }
         },
-        "wraithNodeAutoScalingGroup" : {
+        "wraithArtilleryNodeAutoScalingGroup" : {
            "Type" : "AWS::AutoScaling::AutoScalingGroup",
            "Properties" : {
               "VPCZoneIdentifier" : [ { "Ref": "idPublicSubnet1" } ],
-              "LaunchConfigurationName" : { "Ref" : "wraithNodeLaunchConfig" },
+              "LaunchConfigurationName" : { "Ref" : "wraithArtilleryNodeLaunchConfig" },
               "MinSize" : { "Ref": "NumberOfNodes" },
               "MaxSize" : { "Ref": "NumberOfNodes" },
               "Tags": [
                    {
                        "Key": "Name",
-                       "Value": { "Fn::Join" : [ ".", [ "Wraith_nmap_autoscaling_group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] },
+                       "Value": { "Fn::Join" : [ ".", [ "Wraith_artillery_autoscaling_group", { "Ref" : "SiteName" }, { "Ref" : "AvailabilityZone1" } ] ] },
                        "PropagateAtLaunch": "true"
                    }
                ]
@@ -460,7 +432,7 @@
         },
         "AutoScalingID": {
             "Description": "Autoscaling Group ID for the Lamda scaler",
-            "Value": {"Ref": "wraithNodeAutoScalingGroup"}
+            "Value": {"Ref": "wraithArtilleryNodeAutoScalingGroup"}
         }
     }
 }

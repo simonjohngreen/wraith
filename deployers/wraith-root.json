@@ -41,6 +41,11 @@
             "Type": "String",
             "Default": "true"
         },
+        "SwitchARTILLERYOnOff": {
+            "Description": "Set to false to not deploy Artillery instances for Rest API Performance Testing. Default it true",
+            "Type": "String",
+            "Default": "true"
+        },
         "VPCDOMAIN": {
             "Description": "VCP domain type",
             "Type": "String",
@@ -67,6 +72,16 @@
             "Default": "1.18.9"
         },
         "NMAPNumberOfNodes": {
+            "Description": "Number of instances to deploy in the auto scaling group, either on schedule if a schedule is set, or initialy if no schedule is set",
+            "Type": "String",
+            "Default": "1"
+         },
+         "ARTILLERYVersion": {
+            "Description": "NMAP version to install, default is 1.18.9",
+            "Type": "String",
+            "Default": "1.18.9"
+        },
+        "ARTILLERYNumberOfNodes": {
             "Description": "Number of instances to deploy in the auto scaling group, either on schedule if a schedule is set, or initialy if no schedule is set",
             "Type": "String",
             "Default": "1"
@@ -138,10 +153,21 @@
             "Description": "NMAP CloudWatch Stop Event for example cron(50 18 * * ? *) will scale down the ASG to 0 nodes\n",
             "Default": "cron(55 18 * * ? *)",
             "Type": "String"
-        }
+        },
+        "ARTILLERYLambdaScheduleStartExpression": {
+            "Description": "NMAP CloudWatch Start Events (in UTC not GMT as shown in the console) for example cron(50 17 * * ? *) will scale up the ASG to NumberOfNodes. set to null to disable scheduing and scale up on launch\n",
+            "Default": "cron(55 17 * * ? *)",
+            "Type": "String"
+        },
+        "ARTILLERYLambdaScheduleStopExpression": {
+            "Description": "NMAP CloudWatch Stop Event for example cron(50 18 * * ? *) will scale down the ASG to 0 nodes\n",
+            "Default": "cron(55 18 * * ? *)",
+            "Type": "String"
+        } 
     },
     "Conditions": {
         "DeployNMAPInstances": { "Fn::Equals": [{ "Ref": "SwitchNMAPOnOff" }, "true"] },
+        "DeployARTILLERYInstances": { "Fn::Equals": [{ "Ref": "SwitchARTILLERYOnOff" }, "true"] },
         "ScheduleSet": {"Fn::Not": [{"Fn::Equals" : [{"Ref" : "NMAPLambdaScheduleStartExpression"}, "null"]}]}
     },
     "Resources": {
@@ -191,7 +217,7 @@
         "NMAPNodesStack": {
             "Type": "AWS::CloudFormation::Stack",
             "Condition": "DeployNMAPInstances",
-            "DependsOn": ["S3Stack", "NMAPLamdbaS3CopyStack"],
+            "DependsOn": ["S3Stack", "LamdbaS3CopyStack"],
             "Properties": {
                  "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "/config/wraith-nmap-nodes.json" ]] },
                  "Parameters": {
@@ -250,9 +276,6 @@
                     "ExternaldnsDomainFilter": {
                         "Ref": "ExternaldnsDomainFilter"
                     },
-                    "ExternaldnsZoneID": {
-                        "Ref": "ExternaldnsZoneID"
-                    },
                     "tempS3bucketURL": {
                         "Ref": "tempS3bucketURL"
                     },
@@ -286,7 +309,102 @@
                 }
             }
         },
-        "NMAPLamdbaS3CopyStack": {
+        "ARTILLERYNodesStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Condition": "DeployARTILLERYInstances",
+            "DependsOn": ["S3Stack", "LamdbaS3CopyStack"],
+            "Properties": {
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "/config/wraith-artillery-nodes.json" ]] },
+                 "Parameters": {
+                    "AvailabilityZone1": {
+                        "Ref": "AvailabilityZone1"
+                    },
+                    "WraithNodeInstanceType": {
+                        "Ref": "WraithNodeInstanceType"
+                    },
+                    "KeyName": {
+                        "Ref": "KeyName"
+                    },
+                    "SiteName": {
+                        "Ref": "SiteName"
+                    },
+                    "idVPC": {
+                        "Fn::GetAtt": [ "InfraStack", "Outputs.idVPC" ]
+                    },
+                    "idPublicSubnet1": {
+                        "Fn::GetAtt": [ "InfraStack", "Outputs.idPublicSubnet1" ]
+                    },
+                    "ARTILLERYVersion": {
+                        "Ref": "ARTILLERYVersion"
+                    },
+                    "NumberOfNodes": {
+                        "Fn::If" : [
+                            "ScheduleSet",
+                            "0",
+                            {"Ref": "ARTILLERYNumberOfNodes"}
+                        ]
+                    },
+                    "EmailServerURL": {
+                        "Ref": "EmailServerURL"
+                    },
+                    "EmailUsername": {
+                        "Ref": "EmailUsername"
+                    },
+                    "EmailPassword": {
+                        "Ref": "EmailPassword"
+                    },
+                    "EmailFromAddress": {
+                        "Ref": "EmailFromAddress"
+                    },
+                    "EmailToAddress": {
+                        "Ref": "EmailFromAddress"
+                    },
+                    "DebugLogs": {
+                        "Ref": "DebugLogs"
+                    },
+                    "ExternaldnsEnabled": {
+                        "Ref": "ExternaldnsEnabled"
+                    },
+                    "ExternaldnsCreateZone": {
+                        "Ref": "ExternaldnsCreateZone"
+                    },
+                    "ExternaldnsDomainFilter": {
+                        "Ref": "ExternaldnsDomainFilter"
+                    },
+                    "tempS3bucketURL": {
+                        "Ref": "tempS3bucketURL"
+                    },
+                    "TempS3bucket": {
+                        "Ref": "TempS3bucket"
+                    },
+                    "S3BucketID": {
+                        "Fn::GetAtt": [ "S3Stack", "Outputs.S3BucketID" ] 
+                    }
+                }
+            }
+        },
+        "ARTILLERYLamdbaSchedulerStack": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Condition": "ScheduleSet",
+            "Properties": {
+                 "TemplateURL": { "Fn::Join": ["/", [ { "Ref": "tempS3bucketURL" }, "/config/wraith-lamdba-scheduler.json" ]] },
+                 "Parameters": {
+                    "LambdaScheduleStartExpression": {
+                        "Ref": "ARTILLERYLambdaScheduleStartExpression"
+                    },
+                    "LambdaScheduleStopExpression": {
+                        "Ref": "ARTILLERYLambdaScheduleStopExpression"
+                    },
+                    "AutoScalingID": {
+                        "Fn::GetAtt": [ "ARTILLERYNodesStack", "Outputs.AutoScalingID" ]
+                    },
+                    "NumberOfNodes": {
+                        "Ref": "ARTILLERYNumberOfNodes"
+                    }
+                }
+            }
+        },
+        "LamdbaS3CopyStack": {
             "Type": "AWS::CloudFormation::Stack",
             "DependsOn": ["S3Stack"],
             "Properties": {

@@ -78,12 +78,7 @@
         "ExternaldnsDomainFilter": {
             "Description": "domain for the external dns to monitor",
             "Type": "String",
-            "Default": "incubator.dev.int.foobarservices.com"
-        },
-        "ExternaldnsZoneID": {
-            "Description": "if using an existing domain enter the hosted zone ID here",
-            "Type": "String",
-            "Default": "Z09733143J0NHZEXWD6B"
+            "Default": "nmap.wraith.com"
         },
         "S3BucketID": {
             "Description": "Reports S3 Bucket ID",
@@ -128,22 +123,6 @@
         "HasExternaldnsCreateZone": { "Fn::Equals": [{ "Ref": "ExternaldnsCreateZone" }, "true"] }
     },
     "Resources": {
-        "R53ZONE": {
-            "Type": "AWS::Route53::HostedZone",
-            "Condition": "HasExternaldnsCreateZone",
-            "Properties": {
-               "HostedZoneConfig": {
-                  "Comment": { "Ref": "ExternaldnsDomainFilter" } 
-               },
-               "Name": { "Ref": "ExternaldnsDomainFilter" },
-               "VPCs": [
-                  {
-                     "VPCId": { "Ref": "idVPC" }, 
-                     "VPCRegion": { "Ref": "AWS::Region"}
-                  }
-               ]
-            }
-        },
         "WraithNMAPLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
@@ -196,7 +175,7 @@
                 "Description": "loopback rule"
             }
         },
-        "wraithNodeLaunchConfig" : {
+        "wraithNmapNodeLaunchConfig" : {
            "Type" : "AWS::AutoScaling::LaunchConfiguration",
            "Properties" : {
               "ImageId": {
@@ -220,7 +199,7 @@
               },
               "IamInstanceProfile": { "Ref": "wraithInstanceProfile" },
               "SecurityGroups"        : [ { "Ref" : "SecurityGroupWraith" } ],
-              "LaunchConfigurationName" : "wraithNodeLaunchConfig",
+              "LaunchConfigurationName" : "wraithNmapNodeLaunchConfig",
               "UserData": {
                  "Fn::Base64": {
                    "Fn::Join": [
@@ -338,7 +317,7 @@
                                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                "/usr/local/bin/cfn-signal -e $? ",
                                    "  --stack ", { "Ref": "AWS::StackName" },
-                                   "  --resource wraithNodeAutoScalingGroup " ,
+                                   "  --resource wraithNmapNodeAutoScalingGroup " ,
                                    "  --region ", { "Ref" : "AWS::Region" }, "\n"
                        ]
                     ]
@@ -346,11 +325,11 @@
              }
            }
         },
-        "wraithNodeAutoScalingGroup" : {
+        "wraithNmapNodeAutoScalingGroup" : {
            "Type" : "AWS::AutoScaling::AutoScalingGroup",
            "Properties" : {
               "VPCZoneIdentifier" : [ { "Ref": "idPublicSubnet1" } ],
-              "LaunchConfigurationName" : { "Ref" : "wraithNodeLaunchConfig" },
+              "LaunchConfigurationName" : { "Ref" : "wraithNmapNodeLaunchConfig" },
               "MinSize" : { "Ref": "NumberOfNodes" },
               "MaxSize" : { "Ref": "NumberOfNodes" },
               "Tags": [
@@ -453,7 +432,7 @@
         },
         "AutoScalingID": {
             "Description": "Autoscaling Group ID for the Lamda scaler",
-            "Value": {"Ref": "wraithNodeAutoScalingGroup"}
+            "Value": {"Ref": "wraithNmapNodeAutoScalingGroup"}
         }
     }
 }
