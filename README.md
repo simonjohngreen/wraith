@@ -18,7 +18,7 @@
 
 * In between scaning, the autoscaling groups are scheduled to scale back to 0, saving on compute $$s.
 
-## Which Services does Wraith currently automate,  schedule and generate reports for 
+## Which services does Wraith currently automate,  schedule and generate reports for 
 
 * (ready) NMAP 
     * https://nmap.org 
