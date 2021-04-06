@@ -140,9 +140,7 @@ ParameterKey=EmailPassword,ParameterValue="BKfkjrdoifv79fdyYTW" \
 ParameterKey=EmailFromAddress,ParameterValue="my.email@mydomain.com \"
 ParameterKey=EmailToAddress,ParameterValue="my.email@mydomain"
 ```
-## Some Example Reports
+## Wraith Example Reports
 
-NMAP:
-
-![Https wraith](https://static.wikia.nocookie.net/stargate/images/a/a3/HiveInfection11.jpg/revision/latest/scale-to-width-down/1000?cb=20200608010055)
+[Click Here](https://github.com/simonjohngreen/wraith/tree/main/example-reports)
 
