@@ -25,11 +25,13 @@ for k in $(jq '.wraith.artillery.report | keys | .[]' wraith-config.json); do
 	echo "Debug: XMLREPORTFILENAME $XMLREPORTFILENAME";
 	echo "Debug: PDFREPORTFILENAME $PDFREPORTFILENAME";
 	echo "Debug: ARTILLERYOPTION $ARTILLERYOPTION";
-	#needs work
-	#artillery $ARTILLERYOPTION -oX ./reports-xml/$XMLREPORTFILENAME -iL ./wraith-endpoints-ipv4;
+	#work in progress
+    #artillery run /root/artillery-testscript1.yml  
 	sed -i '/DOCTYPE/d' ./reports-xml/$XMLREPORTFILENAME;
 	fop -xml ./reports-xml/$XMLREPORTFILENAME -xsl artillery-fo.xsl -pdf ./reports-pdf/$PDFREPORTFILENAME;
-done 
+done
+#work in progress
+#artillery run /root/artillery-testscript1.yml  
 sudo chown root:root /etc/msmtp/wraith0 
 sudo chmod 0600 /root/muttrc 
 #get todays list of reports and email them
