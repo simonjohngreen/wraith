@@ -2,39 +2,39 @@
 #redirect stdout/stderr to a file
 exec &> /var/log/wraith.log
 cd /root
-#generate the IPV4 nmap reports
+#generate the artillery reports
 mkdir -p reports-xml
 mkdir -p reports-pdf
 DATEANDTIME="$(date +"%m-%d-%y-%T")"
 HOSTNAME_PREFIX=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname | cut -d"." -f1)
-for k in $(jq '.wraith.nmap.report | keys | .[]' wraith-config.json); do
-	NMAPOPTION=$(jq -r ".wraith.nmap.report[$k] .command" wraith-config.json);
-	if [[ $NMAPOPTION =~ "-6" ]]; then
+for k in $(jq '.wraith.artillery.report | keys | .[]' wraith-config.json); do
+	ARTILLERYOPTION=$(jq -r ".wraith.artillery.report[$k] .command" wraith-config.json);
+	if [[ $ARTILLERYOPTION =~ "-6" ]]; then
    		echo "This test option includes IPV6 -6 so lets setup for that"
-		XMLREPORTFILENAME=nmap-scan-ipv6-$HOSTNAME_PREFIX-$(jq -r ".wraith.nmap.report[$k] .prefix" wraith-config.json)-$DATEANDTIME.xml;
-		PDFREPORTFILENAME=nmap-scan-ipv6-$HOSTNAME_PREFIX-$(jq -r ".wraith.nmap.report[$k] .prefix" wraith-config.json)-$DATEANDTIME.pdf;
+		XMLREPORTFILENAME=artillery-scan-ipv6-$HOSTNAME_PREFIX-$(jq -r ".wraith.artillery.report[$k] .prefix" wraith-config.json)-$DATEANDTIME.xml;
+		PDFREPORTFILENAME=artillery-scan-ipv6-$HOSTNAME_PREFIX-$(jq -r ".wraith.artillery.report[$k] .prefix" wraith-config.json)-$DATEANDTIME.pdf;
 		ENDPOINTFILE=wraith-endpoints-ipv6
 	else	
    		echo "This test option does include IPV6 option -6 so run it as ipv4"
-		XMLREPORTFILENAME=nmap-scan-ipv4-$HOSTNAME_PREFIX-$(jq -r ".wraith.nmap.report[$k] .prefix" wraith-config.json)-$DATEANDTIME.xml;
-		PDFREPORTFILENAME=nmap-scan-ipv4-$HOSTNAME_PREFIX-$(jq -r ".wraith.nmap.report[$k] .prefix" wraith-config.json)-$DATEANDTIME.pdf;
+		XMLREPORTFILENAME=artillery-scan-ipv4-$HOSTNAME_PREFIX-$(jq -r ".wraith.artillery.report[$k] .prefix" wraith-config.json)-$DATEANDTIME.xml;
+		PDFREPORTFILENAME=artillery-scan-ipv4-$HOSTNAME_PREFIX-$(jq -r ".wraith.artillery.report[$k] .prefix" wraith-config.json)-$DATEANDTIME.pdf;
 		ENDPOINTFILE=wraith-endpoints-ipv4
 	fi
    		echo "This test includes IPV6 option -6 so lets setup for that"
 	echo "Debug: k = $k";
 	echo "Debug: XMLREPORTFILENAME $XMLREPORTFILENAME";
 	echo "Debug: PDFREPORTFILENAME $PDFREPORTFILENAME";
-	echo "Debug: NMAPOPTION $NMAPOPTION";
-	nmap $NMAPOPTION -oX ./reports-xml/$XMLREPORTFILENAME -iL ./wraith-endpoints-ipv4;
+	echo "Debug: ARTILLERYOPTION $ARTILLERYOPTION";
+	#needs work
+	#artillery $ARTILLERYOPTION -oX ./reports-xml/$XMLREPORTFILENAME -iL ./wraith-endpoints-ipv4;
 	sed -i '/DOCTYPE/d' ./reports-xml/$XMLREPORTFILENAME;
-	fop -xml ./reports-xml/$XMLREPORTFILENAME -xsl nmap-fo.xsl -pdf ./reports-pdf/$PDFREPORTFILENAME;
+	fop -xml ./reports-xml/$XMLREPORTFILENAME -xsl artillery-fo.xsl -pdf ./reports-pdf/$PDFREPORTFILENAME;
 done 
-echo " add TCP IPV6 Scan"
 sudo chown root:root /etc/msmtp/wraith0 
 sudo chmod 0600 /root/muttrc 
 #get todays list of reports and email them
 TODAYS_REPORTS=$(find reports-pdf/* -daystart -ctime 0 -print | tr '\n' ' ')
-mutt -F /root/muttrc -a $TODAYS_REPORTS -s "Wraith NMAP Report" -- [EmailToAddress] < emailmessage.txt
+mutt -F /root/muttrc -a $TODAYS_REPORTS -s "Wraith ARTILLERY Report" -- [EmailToAddress] < emailmessage.txt
 aws s3 cp /root/reports-xml/ s3://[S3BucketID]/reports-xml/ --recursive
 aws s3 cp /root/reports-pdf/ s3://[S3BucketID]/reports-pdf/ --recursive
 rm /root/reports-xml/*

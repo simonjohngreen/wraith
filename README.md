@@ -23,7 +23,11 @@
 * (ready) NMAP is an opensource port scanner and vulerability test tool. Testing public addresses for open Ports, OS fingerprints, ssh keys etc.
 * (in progress) Artillery is an opensource smoke and performance tester
 * (being considered) Webpagetest is an opensource web performance tool providing deep diagnostic information about how a page performs under a variety of conditions. 
-	
+
+## Wraith Example Reports
+
+[Click Here](https://github.com/simonjohngreen/wraith/tree/main/example-reports)
+
 ## Configuration details follow:
 	
 ### Configuring Wraith before you deploy it:
@@ -140,7 +144,4 @@ ParameterKey=EmailPassword,ParameterValue="BKfkjrdoifv79fdyYTW" \
 ParameterKey=EmailFromAddress,ParameterValue="my.email@mydomain.com \"
 ParameterKey=EmailToAddress,ParameterValue="my.email@mydomain"
 ```
-## Wraith Example Reports
-
-[Click Here](https://github.com/simonjohngreen/wraith/tree/main/example-reports)
 
