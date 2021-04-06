@@ -79,8 +79,8 @@ File: deployers/wraith-configuration.json
 
 ### I don't want to schedule my tests, I just want to run some nodes now. 
 
-* Set parameter NMAPLambdaScheduleStartExpression=null
-* No lambda scheduler will run, instead NMAPNumberOfNodes nodes will be fired up now.
+* Set parameter [service name]LambdaScheduleStartExpression=null
+* No lambda scheduler will run for that service, instead the nodes will be fired up straight away. 
 
 ### Debugging Wraith nodes with ssh:
 ```
