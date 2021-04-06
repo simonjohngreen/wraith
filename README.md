@@ -18,11 +18,17 @@
 
 * In between scaning, the autoscaling groups are scheduled to scale back to 0, saving on compute $$s.
 
-## Which Services does Wraith currently schedule and generate reports on
+## Which Services does Wraith currently automate,  schedule and generate reports for 
 
-* (ready) NMAP is an opensource port scanner and vulerability test tool. Testing public addresses for open Ports, OS fingerprints, ssh keys etc.
-* (in progress) Artillery is an opensource smoke and performance tester
-* (being considered) Webpagetest is an opensource web performance tool providing deep diagnostic information about how a page performs under a variety of conditions. 
+* (ready) NMAP 
+    * https://nmap.org 
+    * NMAP is an opensource port scanner and vulerability test tool. Testing public addresses for open Ports, OS fingerprints, ssh keys etc.
+* (in progress) Artillery 
+    * https://artillery.io
+    * Artillery is an opensource smoke and performance tester
+* (being considered) Webpagetest
+    * https://github.com/WPO-Foundation/webpagetest
+    * webpagetest is an opensource web performance tool providing deep diagnostic information about how a page performs under a variety of conditions. 
 
 ## Wraith Example Reports
 
