@@ -251,6 +251,7 @@
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-config.json /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-endpoints-ipv4 /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-endpoints-ipv6 /root\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-endpoints.json /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/artillery-fo.xsl /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/artillery-runner.sh /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/artillery-tests/ /root/artillery-tests/ --recursive\n",

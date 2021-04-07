@@ -247,6 +247,7 @@
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-config.json /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-endpoints-ipv4 /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-endpoints-ipv6 /root\n",
+                               "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/wraith-endpoints.json /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/nmap-fo.xsl /root\n",
                                "aws s3 cp s3://",{ "Ref" : "S3BucketID" }, "/config/nmap-runner.sh /root\n",
                                "####### msmtp setup for emailing reports################\n",

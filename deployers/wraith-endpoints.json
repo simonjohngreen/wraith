@@ -1,0 +1,25 @@
+{
+  "wraith": {
+    "nmap": {
+      "ipv4": [
+        { "address": "scanme.nmap.org" },
+        { "address": "localhost" }
+      ],
+      "ipv6": [
+        { "address": "scanme.nmap.org" },
+        { "address": "localhost" }
+      ]
+    },
+    "artillery": {
+      "ipv4": [
+        { "address": "scanme.nmap.org" },
+        { "address": "localhost" }
+      ],
+      "ipv6": [
+        { "address": "scanme.nmap.org" },
+        { "address": "localhost" }
+      ]
+    }
+  }
+}
+

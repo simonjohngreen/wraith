@@ -59,6 +59,12 @@ File: deployers/wraith-configuration.json
 
 * This file configures the tests to run, the defaults will get you started and can be left as is.
 
+### Why use autoscaling groups 
+
+* testers which generate a lot of traffic from a single IP address might be blacklisted by application firewalls such as WAF
+* By using auto scaling groups you have the possibility to run hundreds of low traffic nodes, rather than one high traffic node, circumventing rate limiting. 
+* Additionaly public ip addresses in Wraith only exist for the life of the test run, as for the next run we build new nodes.  
+
 ### Installing wraith: (takes < 15 minutes)
 
 * install aws cli and connect to your AWS account, then enter
